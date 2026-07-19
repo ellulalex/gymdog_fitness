@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\Post;
 use App\Support\Tenancy\TenantManager;
 use App\Support\Theme\ThemeManager;
 use Illuminate\Support\Facades\File;
@@ -36,6 +37,11 @@ class ThemeServiceProvider extends ServiceProvider
         // templates read brand, palette and settings from data, never literals.
         View::composer('*', function ($view) {
             $view->with('tenant', $this->app->make(TenantManager::class)->current());
+        });
+
+        // Feed the header's CROSSFIT dropdown with the published movement guides.
+        View::composer('layouts.app', function ($view) {
+            $view->with('navGuides', Post::published()->guides()->orderBy('title')->get(['slug', 'title']));
         });
     }
 }

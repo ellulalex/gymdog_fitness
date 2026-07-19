@@ -66,3 +66,14 @@ it('does not let the root catch-all shadow app routes', function () {
     $this->get('/shop')->assertOk();      // shop, not a content lookup
     $this->get('/admin/login')->assertOk(); // Filament
 });
+
+it('lists movement guides in the header CrossFit menu', function () {
+    Post::factory()->guide()->create(['slug' => 'the-power-clean', 'title' => 'The Power Clean']);
+    Post::factory()->create(['title' => 'A Normal Article']); // not a guide
+
+    $this->get('/')
+        ->assertOk()
+        ->assertSee('CrossFit', false)
+        ->assertSee('The Power Clean')      // guide is in the nav
+        ->assertDontSee('A Normal Article'); // articles are not
+});

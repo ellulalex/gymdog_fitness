@@ -27,10 +27,25 @@
 <body class="min-h-screen flex flex-col bg-white text-gray-900 antialiased">
     <header class="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-gray-100">
         <div class="mx-auto max-w-6xl px-6 h-16 flex items-center justify-between">
-            <nav class="hidden md:flex gap-6 text-sm font-medium text-gray-600 uppercase tracking-wide">
+            <nav class="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600 uppercase tracking-wide">
                 <a href="/" class="hover:text-[var(--brand-primary)]">Home</a>
                 <a href="/shop" class="hover:text-[var(--brand-primary)]">Shop</a>
                 <a href="/blog" class="hover:text-[var(--brand-primary)]">Blog</a>
+                @if (! empty($navGuides) && $navGuides->isNotEmpty())
+                    <div class="relative" x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false">
+                        <button type="button" @click="open = !open" class="flex items-center gap-1 uppercase hover:text-[var(--brand-primary)]">
+                            CrossFit <span class="text-[10px]">▾</span>
+                        </button>
+                        <div x-show="open" x-transition style="display:none" class="absolute left-0 top-full pt-2 w-60 z-40">
+                            <div class="bg-white border border-gray-100 rounded-lg shadow-lg py-2">
+                                @foreach ($navGuides as $guide)
+                                    <a href="{{ url('/'.$guide->slug) }}"
+                                       class="block px-4 py-2 text-sm normal-case tracking-normal text-gray-700 hover:bg-gray-50 hover:text-[var(--brand-primary)]">{{ $guide->title }}</a>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                @endif
             </nav>
             <a href="/" class="text-xl font-semibold tracking-tight">{{ $brand }}</a>
             <div class="flex items-center gap-4 text-gray-600">
