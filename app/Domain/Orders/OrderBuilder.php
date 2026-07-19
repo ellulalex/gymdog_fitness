@@ -40,6 +40,7 @@ class OrderBuilder
         return DB::transaction(function () use ($cart, $data, $shipping, $country, $totals, $discountModel) {
             $order = Order::create([
                 'number' => $this->nextNumber(),
+                'customer_id' => $data['customer_id'] ?? null,
                 'email' => $data['email'],
                 'status' => 'pending',
                 'payment_status' => 'unpaid',

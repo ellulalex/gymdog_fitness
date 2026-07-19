@@ -1,8 +1,10 @@
 <?php
 
 use App\Http\Controllers\Content\RejectGeneratedPostController;
+use App\Http\Controllers\Storefront\AccountController;
 use App\Http\Controllers\Storefront\CheckoutConfirmationController;
 use App\Http\Controllers\Storefront\ContentController;
+use App\Http\Controllers\Storefront\CustomerAuthController;
 use App\Http\Controllers\Storefront\HomeController;
 use App\Http\Controllers\Storefront\ProductController;
 use App\Http\Controllers\Storefront\ShopController;
@@ -21,6 +23,15 @@ Route::get('/product-brands/{brand:slug}', [ShopController::class, 'brand'])->na
 Route::get('/product/{product:slug}', [ProductController::class, 'show'])->name('product.show');
 Route::view('/cart', 'storefront.cart')->name('cart');
 Route::view('/wishlist', 'storefront.wishlist')->name('wishlist');
+Route::view('/search', 'storefront.search-page')->name('search');
+
+// Customer accounts (storefront 'customer' guard — separate from staff).
+Route::get('/login', [CustomerAuthController::class, 'showLogin'])->name('login');
+Route::post('/login', [CustomerAuthController::class, 'login']);
+Route::get('/register', [CustomerAuthController::class, 'showRegister'])->name('register');
+Route::post('/register', [CustomerAuthController::class, 'register']);
+Route::post('/logout', [CustomerAuthController::class, 'logout'])->name('logout');
+Route::get('/account', [AccountController::class, 'dashboard'])->name('account')->middleware('auth:customer');
 Route::view('/checkout', 'storefront.checkout-page')->name('checkout');
 Route::get('/checkout/confirmation', CheckoutConfirmationController::class)->name('checkout.confirmation');
 
@@ -41,5 +52,5 @@ Route::get('/category/{postCategory:slug}', [ContentController::class, 'category
 // Root-level pages & posts — registered LAST so it never shadows the routes
 // above; constrained to a single segment that isn't a reserved app prefix.
 Route::get('/{slug}', [ContentController::class, 'show'])
-    ->where('slug', '^(?!admin|livewire|up|storage|api|sitemap\.xml|shop|cart|checkout|product|product-brands|category|blog|stripe)[A-Za-z0-9\-]+$')
+    ->where('slug', '^(?!admin|livewire|up|storage|api|sitemap\.xml|shop|cart|checkout|product|product-brands|category|blog|stripe|search|login|register|logout|account|wishlist|horizon)[A-Za-z0-9\-]+$')
     ->name('content.show');

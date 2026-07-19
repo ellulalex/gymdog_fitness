@@ -39,6 +39,12 @@ class Checkout extends Component
         if (app(CartManager::class)->current()->load('lines')->isEmpty()) {
             return redirect()->route('shop');
         }
+
+        // Prefill for a signed-in customer.
+        if ($customer = auth('customer')->user()) {
+            $this->email = $customer->email;
+            $this->name = $customer->name;
+        }
     }
 
     public function placeOrder(OrderBuilder $builder, PaymentGateway $gateway)
@@ -61,6 +67,7 @@ class Checkout extends Component
 
         $order = $builder->fromCart($cart, [
             'email' => $this->email,
+            'customer_id' => auth('customer')->id(),
             'shipping_address' => $address,
             'billing_address' => $address,
         ]);
