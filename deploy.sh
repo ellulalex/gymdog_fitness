@@ -47,6 +47,7 @@ ssh -i "$SSH_KEY" "$REMOTE_HOST" bash -s <<EOF
   git pull origin "$BRANCH"
   composer install --no-dev --optimize-autoloader --no-interaction
   php artisan migrate --force
+  php artisan horizon:publish
   php artisan config:cache
   php artisan route:cache
   php artisan view:cache
