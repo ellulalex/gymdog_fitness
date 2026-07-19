@@ -34,9 +34,4 @@ class Category extends Model
     {
         return $this->parent_id === null;
     }
-
-    public function getRouteKeyName(): string
-    {
-        return 'slug';
-    }
 }

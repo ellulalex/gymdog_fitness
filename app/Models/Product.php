@@ -55,11 +55,6 @@ class Product extends Model
             });
     }
 
-    public function getRouteKeyName(): string
-    {
-        return 'slug';
-    }
-
     // --- Presentation helpers (read from variants, never hardcoded) ---
 
     public function lowestPriceCents(): ?int
