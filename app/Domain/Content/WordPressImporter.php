@@ -8,7 +8,9 @@ use App\Models\PostCategory;
 use App\Models\Redirect;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Throwable;
 
 /**
  * Imports pages and posts from a live WordPress site's REST API into the
@@ -24,10 +26,16 @@ class WordPressImporter
     /** @var array<string,int> */
     public array $counts = [
         'pages' => 0, 'guides' => 0, 'posts' => 0,
-        'categories' => 0, 'redirects' => 0, 'skipped' => 0,
+        'categories' => 0, 'redirects' => 0, 'media' => 0, 'skipped' => 0,
     ];
 
-    public function __construct(private readonly string $baseUrl) {}
+    /** @var array<string,string> original image URL → local URL */
+    private array $mediaMap = [];
+
+    public function __construct(
+        private readonly string $baseUrl,
+        private readonly bool $rehostMedia = true,
+    ) {}
 
     public function import(): array
     {
@@ -88,7 +96,7 @@ class WordPressImporter
                 ['slug' => $slug],
                 [
                     'title' => $this->title($item),
-                    'body' => $item['content']['rendered'] ?? '',
+                    'body' => $this->body($item),
                     'status' => $this->status($item),
                     'published_at' => $this->date($item),
                 ],
@@ -115,7 +123,7 @@ class WordPressImporter
                 'type' => $type,
                 'title' => $this->title($item),
                 'excerpt' => Str::limit($this->plain($item['excerpt']['rendered'] ?? ''), 280, ''),
-                'body' => $item['content']['rendered'] ?? '',
+                'body' => $this->body($item),
                 'status' => $this->status($item),
                 'published_at' => $this->date($item),
                 'source' => 'human',
@@ -199,5 +207,70 @@ class WordPressImporter
     private function plain(string $value): string
     {
         return trim(html_entity_decode(strip_tags($value), ENT_QUOTES | ENT_HTML5));
+    }
+
+    // --- Media re-hosting ---
+
+    /** Body HTML with WordPress-hosted images downloaded and rewritten locally. */
+    private function body(array $item): string
+    {
+        $html = $item['content']['rendered'] ?? '';
+
+        if (! $this->rehostMedia || $html === '') {
+            return $html;
+        }
+
+        // Drop responsive srcset/sizes so we only need to re-host the main src,
+        // not every resized WordPress variant.
+        $html = preg_replace('/\s+(?:srcset|sizes)="[^"]*"/i', '', $html) ?? $html;
+
+        preg_match_all('/https?:\/\/[^\s"\'()]+?\.(?:jpe?g|png|gif|webp|svg)/i', $html, $matches);
+
+        foreach (array_unique($matches[0]) as $url) {
+            if (! $this->isWordPressMedia($url)) {
+                continue;
+            }
+
+            if ($local = $this->download($url)) {
+                $html = str_replace($url, $local, $html);
+            }
+        }
+
+        return $html;
+    }
+
+    private function isWordPressMedia(string $url): bool
+    {
+        return str_contains($url, '/wp-content/')
+            || parse_url($url, PHP_URL_HOST) === parse_url($this->baseUrl, PHP_URL_HOST);
+    }
+
+    /** Download an image to the public disk once; return its local URL (or null). */
+    private function download(string $url): ?string
+    {
+        if (isset($this->mediaMap[$url])) {
+            return $this->mediaMap[$url];
+        }
+
+        try {
+            $response = Http::get($url);
+
+            if (! $response->successful()) {
+                return null;
+            }
+
+            $ext = strtolower(pathinfo(parse_url($url, PHP_URL_PATH) ?? '', PATHINFO_EXTENSION)) ?: 'jpg';
+            $path = 'content-media/'.sha1($url).'.'.$ext;
+
+            Storage::disk('public')->put($path, $response->body());
+
+            $local = Storage::disk('public')->url($path);
+            $this->mediaMap[$url] = $local;
+            $this->counts['media']++;
+
+            return $local;
+        } catch (Throwable) {
+            return null; // leave the original URL; import shouldn't fail on one image
+        }
     }
 }
