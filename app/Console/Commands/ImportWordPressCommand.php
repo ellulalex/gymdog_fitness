@@ -29,7 +29,11 @@ class ImportWordPressCommand extends Command
         $dryRun = (bool) $this->option('dry-run');
         $this->info(($dryRun ? '[dry run] ' : '')."Importing from {$url} …");
 
-        $importer = new WordPressImporter($url, rehostMedia: ! $this->option('skip-media'));
+        // Image downloads aren't transactional, so a dry run never re-hosts
+        // media (it would leave orphan files behind the rolled-back records).
+        $rehostMedia = ! $this->option('skip-media') && ! $dryRun;
+
+        $importer = new WordPressImporter($url, rehostMedia: $rehostMedia);
 
         try {
             if ($dryRun) {
@@ -55,10 +59,10 @@ class ImportWordPressCommand extends Command
 
         $this->info($dryRun ? 'Dry run complete — nothing was written.' : 'Import complete.');
 
-        if ($this->option('skip-media')) {
-            $this->comment('Media re-hosting skipped — image URLs still point at WordPress.');
+        if ($rehostMedia) {
+            $this->comment('Images re-hosted to storage/app/public/content-media (ensure `php artisan storage:link` has been run).');
         } else {
-            $this->comment('Images re-hosted to storage/app/public/content-media (run `php artisan storage:link` once if not already linked).');
+            $this->comment('Media re-hosting off — image URLs still point at WordPress.');
         }
 
         return self::SUCCESS;
