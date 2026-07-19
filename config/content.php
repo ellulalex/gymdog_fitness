@@ -43,6 +43,44 @@ return [
     'min_words' => (int) env('CONTENT_MIN_WORDS', 400),
 
     /*
+    |--------------------------------------------------------------------------
+    | WordPress import (Phase 3 migration)
+    |--------------------------------------------------------------------------
+    |
+    | Rules for `content:import-wordpress`. The eight CrossFit movement guides
+    | live as WordPress *pages* but should become posts with type=guide (root
+    | URLs preserved). Some slugs are dropped with a 301 instead (spec §10).
+    |
+    */
+
+    'wordpress' => [
+
+        // WordPress "pages" that are really guides → imported as type=guide posts.
+        'guide_slugs' => [
+            'the-power-clean',
+            'weightlifting-in-crossfit',
+            '9-foundational-movements',
+            'thruster',
+            'gymnastics-in-crossfit',
+            'cardiovascular-fitness',
+            'the-devils-press',
+            'crossfit-boxes-in-malta',
+        ],
+
+        // Skipped on import (Ninetheme demo leftover, etc.).
+        'skip_slugs' => ['about-me'],
+
+        // 301s to create alongside the import.
+        'redirects' => [
+            '/about-me/' => '/about-us',
+            '/category/uncategorized/' => '/blog',
+        ],
+
+        // Post categories to skip.
+        'skip_categories' => ['uncategorized'],
+    ],
+
+    /*
     | Banned-claims filter — CRITICAL for a fitness site. Generated content must
     | not make medical claims, give dosage/treatment/injury advice, or promise
     | health outcomes. This is regulatory exposure, not just quality (spec §9).
