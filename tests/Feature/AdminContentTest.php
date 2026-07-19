@@ -23,4 +23,6 @@ it('renders the content admin pages', function (string $url) {
     '/admin/post-categories/create',
     '/admin/redirects',
     '/admin/redirects/create',
+    '/admin/topics',
+    '/admin/topics/create',
 ]);

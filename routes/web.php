@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Content\RejectGeneratedPostController;
 use App\Http\Controllers\Storefront\CheckoutConfirmationController;
 use App\Http\Controllers\Storefront\ContentController;
 use App\Http\Controllers\Storefront\HomeController;
@@ -25,6 +26,12 @@ Route::get('/checkout/confirmation', CheckoutConfirmationController::class)->nam
 
 // Stripe webhooks are the source of truth for payment state (spec §7).
 Route::post('/stripe/webhook', StripeWebhookController::class)->name('stripe.webhook');
+
+// One-click reject for a scheduled AI-generated post (signed link from the
+// review email — the signature is the authorization).
+Route::get('/content/{post}/reject', RejectGeneratedPostController::class)
+    ->middleware('signed')
+    ->name('content.reject');
 
 // Content.
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
