@@ -19,6 +19,7 @@
         }
     </style>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @livewireStyles
 </head>
 <body class="min-h-screen flex flex-col bg-white text-gray-900 antialiased">
     <header class="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-gray-100">
@@ -46,5 +47,6 @@
             <span class="opacity-80">Built on the Gymdog commerce platform</span>
         </div>
     </footer>
+    @livewireScripts
 </body>
 </html>

@@ -28,7 +28,7 @@ it('renders the gymdog theme home over the default theme', function () {
         ->assertSee("Malta's CrossFit Portal", false);
 });
 
-it('serves placeholder storefront routes without 404', function () {
-    $this->get('/shop')->assertOk()->assertSee('Coming soon');
-    $this->get('/blog')->assertOk();
+it('serves the shop and the blog placeholder without 404', function () {
+    $this->get('/shop')->assertOk();
+    $this->get('/blog')->assertOk()->assertSee('Coming soon');
 });
