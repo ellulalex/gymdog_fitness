@@ -14,6 +14,7 @@ Route::get('/shop/{parent:slug}/{category:slug}', [ShopController::class, 'subca
 Route::get('/shop/{category:slug}', [ShopController::class, 'category'])->name('category.show');
 Route::get('/product-brands/{brand:slug}', [ShopController::class, 'brand'])->name('brand.show');
 Route::get('/product/{product:slug}', [ProductController::class, 'show'])->name('product.show');
+Route::view('/cart', 'storefront.cart')->name('cart');
 
 // Content routes arrive in Phase 3.
 Route::view('/blog', 'placeholder', ['heading' => 'Blog'])->name('blog');
