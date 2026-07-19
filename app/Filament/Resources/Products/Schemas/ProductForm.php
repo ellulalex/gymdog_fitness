@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Products\Schemas;
 
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
@@ -40,6 +41,13 @@ class ProductForm
                             ->relationship('categories', 'name')
                             ->multiple()
                             ->preload()
+                            ->columnSpanFull(),
+                        SpatieMediaLibraryFileUpload::make('images')
+                            ->collection('images')
+                            ->image()
+                            ->multiple()
+                            ->reorderable()
+                            ->appendFiles()
                             ->columnSpanFull(),
                     ]),
 

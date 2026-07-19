@@ -6,9 +6,12 @@
 @endphp
 <a href="{{ route('product.show', $product->slug) }}"
    class="group block rounded-2xl border border-gray-100 overflow-hidden hover:shadow-md transition-shadow bg-white">
-    <div class="relative aspect-square bg-gray-50 flex items-center justify-center">
-        {{-- Media library lands as a follow-up; placeholder for now. --}}
-        <span class="text-4xl font-light text-gray-300">{{ Str::of($product->name)->substr(0, 1)->upper() }}</span>
+    <div class="relative aspect-square bg-gray-50 flex items-center justify-center overflow-hidden">
+        @if ($url = $product->imageUrl('thumb'))
+            <img src="{{ $url }}" alt="{{ $product->name }}" loading="lazy" class="h-full w-full object-cover">
+        @else
+            <span class="text-4xl font-light text-gray-300">{{ Str::of($product->name)->substr(0, 1)->upper() }}</span>
+        @endif
         <div class="absolute top-3 left-3 flex flex-col gap-1">
             @if ($onSale)
                 <span class="rounded-full px-2 py-0.5 text-xs font-semibold text-white" style="background: var(--brand-accent)">

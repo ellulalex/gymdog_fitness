@@ -7,7 +7,7 @@ Rebuild of [gymdog.fitness](https://gymdog.fitness) off WordPress/WooCommerce, s
 ## Phase status
 
 - **Phase 0 — Foundations ✅** — tenancy layer, theme resolution, admin, CI, deploy script.
-- Phase 1 — Catalogue (products, variants, categories, brands, filtering)
+- **Phase 1 — Catalogue ✅** — products/variants/nested categories/brands, Filament admin, media library, storefront with faceted filtering.
 - Phase 2 — Cart & checkout (Stripe Connect) ← the phase that matters
 - Phase 3 — Content & CMS + WordPress migration
 - Phase 4 — Content automation
