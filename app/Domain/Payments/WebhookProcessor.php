@@ -47,9 +47,15 @@ class WebhookProcessor
         DB::transaction(function () use ($order) {
             $order->markPaid();
 
-            // Draw down stock only once payment is confirmed.
+            // Draw down stock and record cost of goods (FIFO across
+            // consignments) only once payment is confirmed.
             foreach ($order->lines as $line) {
-                $line->variant?->decrement('stock_qty', $line->qty);
+                if (! $line->variant) {
+                    continue;
+                }
+
+                $line->variant->decrement('stock_qty', $line->qty);
+                $line->update(['cost_cents' => $line->variant->drawDownFifo($line->qty)]);
             }
         });
 

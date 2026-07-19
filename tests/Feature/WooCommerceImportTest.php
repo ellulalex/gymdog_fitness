@@ -36,7 +36,7 @@ function fakeStore(): void
                 'images' => [['src' => 'https://gymdog.fitness/wp-content/uploads/grips.png']],
             ],
             [
-                'name' => 'Callus Remover', 'slug' => 'callus-performance-callus-remover',
+                'name' => 'Callus Remover', 'slug' => 'mystery-gadget',
                 'type' => 'simple', 'on_sale' => true, 'is_in_stock' => true,
                 'description' => '<p>Remover</p>', 'short_description' => '',
                 'prices' => ['price' => '1995', 'regular_price' => '2559', 'sale_price' => '1995'],
@@ -75,7 +75,7 @@ it('captures a sale and nests categories', function () {
     fakeStore();
     (new WooCommerceImporter('https://gymdog.fitness', rehostMedia: false))->import();
 
-    $callus = Product::where('slug', 'callus-performance-callus-remover')->first();
+    $callus = Product::where('slug', 'mystery-gadget')->first();
     $v = $callus->variants->first();
     expect($v->price_cents)->toBe(1995)
         ->and($v->compare_at_price_cents)->toBe(2559)      // on sale
@@ -91,8 +91,8 @@ it('flags products with no mapped brand', function () {
     $importer = new WooCommerceImporter('https://gymdog.fitness', rehostMedia: false);
     $importer->import();
 
-    expect(Product::where('slug', 'callus-performance-callus-remover')->first()->brand_id)->toBeNull()
-        ->and(collect($importer->needsAttention)->contains(fn ($n) => str_contains($n, 'callus-performance')))->toBeTrue();
+    expect(Product::where('slug', 'mystery-gadget')->first()->brand_id)->toBeNull()
+        ->and(collect($importer->needsAttention)->contains(fn ($n) => str_contains($n, 'mystery-gadget')))->toBeTrue();
 });
 
 it('re-hosts product images into the media library', function () {

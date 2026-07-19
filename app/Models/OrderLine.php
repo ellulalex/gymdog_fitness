@@ -9,7 +9,7 @@ class OrderLine extends Model
 {
     protected $fillable = [
         'order_id', 'product_variant_id', 'name_snapshot', 'sku_snapshot',
-        'unit_price_cents', 'qty', 'tax_rate', 'tax_cents', 'total_cents',
+        'unit_price_cents', 'qty', 'tax_rate', 'tax_cents', 'total_cents', 'cost_cents',
     ];
 
     public function order(): BelongsTo

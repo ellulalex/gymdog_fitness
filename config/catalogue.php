@@ -52,6 +52,12 @@ return [
             'panda-x3-gymnastic-grips-3-hole' => 'Picsil',
             'hex-tech-knee-pads-5mm-0-2' => 'Picsil',
             'venta-x2-knee-sleeves-5mm' => 'Picsil',
+            'hand-grips-quad-competition' => 'Reyllen',
+            'elastic-wrist-strap-for-weightlifting-powerlifting' => 'Picsil',
+            'speed-skipping-rope' => 'Domyos',
+            'jump-rope-abs-b' => 'Domyos',
+            'lumbar-belt' => 'Domyos',
+            'callus-performance-callus-remover' => 'Callus Performance',
         ],
 
         // Placeholder stock for in-stock variants (real quantities are entered by hand).

@@ -53,6 +53,12 @@ class OrderInfolist
                         TextEntry::make('shipping_cents')->label('Shipping')->formatStateUsing($money),
                         TextEntry::make('total_cents')->label('Total')->formatStateUsing($money)->weight('bold'),
                         TextEntry::make('tax_cents')->label('of which VAT')->formatStateUsing($money),
+                        TextEntry::make('cogs')->label('Cost of goods')
+                            ->state(fn (Order $record) => $money((int) $record->lines->sum('cost_cents'))),
+                        TextEntry::make('margin')->label('Margin (ex-VAT, ex-shipping)')
+                            ->state(fn (Order $record) => $money(
+                                $record->subtotal_cents - $record->discount_cents - (int) $record->lines->sum('cost_cents')
+                            ))->weight('bold'),
                     ]),
 
                 Section::make('Shipping address')

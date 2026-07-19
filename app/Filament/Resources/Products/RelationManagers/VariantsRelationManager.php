@@ -95,6 +95,18 @@ class VariantsRelationManager extends RelationManager
                     ->label('Stock')
                     ->badge()
                     ->color(fn (int $state) => $state > 0 ? 'success' : 'danger'),
+                TextColumn::make('avg_cost')
+                    ->label('Avg cost')
+                    ->state(fn ($record) => ($c = $record->averageCostCents()) !== null ? '€'.number_format($c / 100, 2) : '—')
+                    ->toggleable(),
+                TextColumn::make('margin')
+                    ->label('Margin')
+                    ->state(function ($record) {
+                        $cost = $record->averageCostCents();
+
+                        return $cost !== null ? '€'.number_format(($record->price_cents - $cost) / 100, 2) : '—';
+                    })
+                    ->toggleable(),
             ])
             ->headerActions([
                 CreateAction::make(),

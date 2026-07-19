@@ -24,6 +24,8 @@ it('renders the catalogue admin pages', function (string $url) {
     '/admin/brands/create',
     '/admin/categories',
     '/admin/categories/create',
+    '/admin/consignments',
+    '/admin/consignments/create',
 ]);
 
 it('opens the product edit page with its relation managers', function () {
