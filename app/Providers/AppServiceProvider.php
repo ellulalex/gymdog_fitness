@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Domain\Payments\PaymentGateway;
+use App\Domain\Payments\StripeGateway;
 use App\Support\Cart\CartManager;
 use Illuminate\Support\ServiceProvider;
 
@@ -13,6 +15,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(CartManager::class);
+        $this->app->bind(PaymentGateway::class, StripeGateway::class);
     }
 
     /**

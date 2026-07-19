@@ -35,4 +35,14 @@ return [
         ],
     ],
 
+    'stripe' => [
+        'key' => env('STRIPE_KEY'),
+        'secret' => env('STRIPE_SECRET'),
+        'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
+        // Connect: set per-tenant later. Empty = direct charge on the platform
+        // account (spec §7, "direct for now, Connect-ready").
+        'connected_account' => env('STRIPE_CONNECTED_ACCOUNT'),
+        'application_fee_bps' => (int) env('STRIPE_APPLICATION_FEE_BPS', 0),
+    ],
+
 ];

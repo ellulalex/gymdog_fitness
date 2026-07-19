@@ -61,12 +61,11 @@
                 </div>
                 <p class="text-xs text-gray-400">Includes €{{ number_format($totals->taxCents / 100, 2) }} VAT. Free delivery over €50 (Malta).</p>
 
-                <button type="button" disabled
-                        class="w-full rounded-full px-6 py-3 text-sm font-semibold text-white opacity-60 cursor-not-allowed"
-                        style="background: var(--brand-primary)">
+                <a href="{{ route('checkout') }}"
+                   class="block text-center w-full rounded-full px-6 py-3 text-sm font-semibold text-white"
+                   style="background: var(--brand-primary)">
                     Checkout
-                </button>
-                <p class="text-center text-xs text-gray-400">Stripe checkout lands next.</p>
+                </a>
             </aside>
         </div>
     @endif
