@@ -3,6 +3,10 @@
 Standing up the Hetzner box (staging now, production later). Server:
 `gymdog@46.224.160.95`, Ubuntu 24.04 LTS, CPX22.
 
+> **Status:** this box is provisioned and live at **https://staging.gymdog.fitness**
+> (Let's Encrypt TLS, Horizon + scheduler running, branch `staging-setup`).
+> The steps below are the runbook for reproducing it / doing the prod cutover.
+
 ## 1. Provision the system (once, as root)
 
 ```bash
@@ -31,8 +35,12 @@ git clone git@github.com:ellulalex/gymdog_fitness.git ~/app
 cd ~/app
 cp .env.example .env
 # Edit .env: APP_ENV=production, APP_DEBUG=false, APP_URL=https://staging.gymdog.fitness,
-#   DB_* from ~/server-credentials.txt, CACHE_STORE=redis, QUEUE_CONNECTION=redis,
-#   SESSION_DRIVER=redis, a real ADMIN_PASSWORD, and (when ready) STRIPE_*/ANTHROPIC_API_KEY.
+#   DB_USERNAME/DB_PASSWORD/DB_DATABASE from ~/server-credentials.txt.
+#   Use the MySQL socket (the app user is created for 'localhost'):
+#     DB_HOST=localhost
+#     DB_SOCKET=/var/run/mysqld/mysqld.sock
+#   CACHE_STORE=redis, QUEUE_CONNECTION=redis, SESSION_DRIVER=redis,
+#   a real ADMIN_PASSWORD, and (when ready) STRIPE_*/ANTHROPIC_API_KEY.
 composer install --no-dev --optimize-autoloader
 php artisan key:generate
 php artisan storage:link
@@ -46,6 +54,9 @@ is needed on the server. From your Mac: `./deploy.sh main`.
 ## 4. Web server + queue + scheduler
 
 ```bash
+# let nginx (www-data) traverse into the app user's home to serve public/
+sudo chmod 755 /home/gymdog
+
 # nginx site
 sudo cp ~/app/deploy/nginx.conf /etc/nginx/sites-available/gymdog
 sudo ln -sf /etc/nginx/sites-available/gymdog /etc/nginx/sites-enabled/gymdog
