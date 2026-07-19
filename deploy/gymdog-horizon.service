@@ -1,0 +1,20 @@
+# Laravel Horizon (Redis queue worker) as a systemd service.
+# Install: copy to /etc/systemd/system/gymdog-horizon.service, then
+#   systemctl daemon-reload && systemctl enable --now gymdog-horizon
+# Restart on each deploy with: php artisan horizon:terminate (Horizon respawns).
+
+[Unit]
+Description=Gymdog Laravel Horizon
+After=network.target mysql.service redis-server.service
+
+[Service]
+Type=simple
+User=gymdog
+Group=gymdog
+Restart=always
+RestartSec=3
+WorkingDirectory=/home/gymdog/app
+ExecStart=/usr/bin/php8.4 /home/gymdog/app/artisan horizon
+
+[Install]
+WantedBy=multi-user.target

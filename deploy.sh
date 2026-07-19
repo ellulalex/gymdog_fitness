@@ -15,8 +15,8 @@ set -euo pipefail
 # ---------------------------------------------------------------------------
 # Configuration — fill these in when the new Hetzner box is provisioned.
 # ---------------------------------------------------------------------------
-REMOTE_HOST="${DEPLOY_HOST:-root@REPLACE_WITH_NEW_SERVER_IP}"
-REMOTE_PATH="${DEPLOY_PATH:-/home/gymdog/web/REPLACE_WITH_APP_PATH}"
+REMOTE_HOST="${DEPLOY_HOST:-gymdog@46.224.160.95}"
+REMOTE_PATH="${DEPLOY_PATH:-/home/gymdog/app}"
 SSH_KEY="${DEPLOY_SSH_KEY:-$HOME/.ssh/id_ed25519}"
 BRANCH="${1:-main}"
 # ---------------------------------------------------------------------------
@@ -51,18 +51,13 @@ ssh -i "$SSH_KEY" "$REMOTE_HOST" bash -s <<EOF
   php artisan route:cache
   php artisan view:cache
   php artisan filament:optimize
+  php artisan horizon:terminate   # systemd respawns Horizon with the new code
 EOF
 
 echo "✅ Deployment complete!"
 
 # ---------------------------------------------------------------------------
-# First-time setup on a fresh box (run manually, once):
-#   git clone <repo> "$REMOTE_PATH" && cd "$REMOTE_PATH"
-#   cp .env.example .env   # then edit: APP_ENV=production, APP_DEBUG=false,
-#                          # real DB creds, APP_URL, ADMIN_PASSWORD
-#   php artisan key:generate
-#   php artisan storage:link
-#   php artisan migrate --force && php artisan db:seed --force
-#   ln -s "$REMOTE_PATH/public" "$REMOTE_PATH/public_html"   # if the vhost needs it
+# First-time setup: run deploy/provision.sh on the box, then follow
+# deploy/PROVISIONING.md (deploy key → clone → .env → migrate/seed → SSL).
 # Always back up the database before deploying to production.
 # ---------------------------------------------------------------------------
