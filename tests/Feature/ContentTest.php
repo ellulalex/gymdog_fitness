@@ -29,13 +29,15 @@ it('renders posts and crossfit guides at the root', function () {
 });
 
 it('lists articles on the blog but not guides', function () {
-    Post::factory()->create(['title' => 'A Real Article']);
-    Post::factory()->guide()->create(['title' => 'A Movement Guide']);
+    Post::factory()->create(['title' => 'A Real Article', 'excerpt' => 'article-marker']);
+    Post::factory()->guide()->create(['title' => 'A Movement Guide', 'excerpt' => 'guide-marker']);
 
+    // Excerpts only render in the blog article cards (guides appear only as
+    // titles in the nav), so they isolate the article list from the nav.
     $this->get('/blog')
         ->assertOk()
-        ->assertSee('A Real Article')
-        ->assertDontSee('A Movement Guide');
+        ->assertSee('article-marker')
+        ->assertDontSee('guide-marker');
 });
 
 it('shows a post category page', function () {
