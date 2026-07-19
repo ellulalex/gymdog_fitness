@@ -75,6 +75,12 @@
             <span class="text-gray-500">Subtotal</span>
             <span>€{{ number_format($totals->subtotalCents / 100, 2) }}</span>
         </div>
+        @if ($totals->discountCents > 0)
+            <div class="flex justify-between text-sm">
+                <span class="text-gray-500">Discount</span>
+                <span>−€{{ number_format($totals->discountCents / 100, 2) }}</span>
+            </div>
+        @endif
         <div class="flex justify-between text-sm">
             <span class="text-gray-500">Shipping</span>
             <span>{{ $totals->shippingCents === 0 ? 'Free' : '€'.number_format($totals->shippingCents / 100, 2) }}</span>

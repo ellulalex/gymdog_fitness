@@ -8,6 +8,7 @@ use App\Domain\Orders\TotalsCalculator;
 use App\Support\Tenancy\BelongsToTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Session;
 
 class Cart extends Model
 {
@@ -52,11 +53,63 @@ class Cart extends Model
             ->all();
     }
 
-    public function totals(int $discountCents = 0, ?string $country = null): OrderTotals
+    public function subtotalCents(): int
+    {
+        return array_sum(array_map(fn (TotalLine $l) => $l->subtotalCents(), $this->totalLines()));
+    }
+
+    // --- Discounts (applied code kept in the session, 1:1 with the cart) ---
+
+    public function appliedCode(): ?string
+    {
+        return Session::get('cart_discount');
+    }
+
+    /** The applied discount if it still validates against the current subtotal. */
+    public function appliedDiscount(): ?Discount
+    {
+        $code = $this->appliedCode();
+
+        if (! $code) {
+            return null;
+        }
+
+        $discount = Discount::where('code', $code)->first();
+
+        return $discount && $discount->isValidFor($this->subtotalCents()) ? $discount : null;
+    }
+
+    public function discountCents(): int
+    {
+        $discount = $this->appliedDiscount();
+
+        return $discount ? $discount->amountFor($this->subtotalCents()) : 0;
+    }
+
+    /** Try to apply a code; returns false (and applies nothing) if invalid. */
+    public function applyCode(string $code): bool
+    {
+        $discount = Discount::where('code', trim($code))->first();
+
+        if (! $discount || ! $discount->isValidFor($this->subtotalCents())) {
+            return false;
+        }
+
+        Session::put('cart_discount', $discount->code);
+
+        return true;
+    }
+
+    public function removeDiscount(): void
+    {
+        Session::forget('cart_discount');
+    }
+
+    public function totals(?string $country = null): OrderTotals
     {
         return app(TotalsCalculator::class)->calculate(
             $this->totalLines(),
-            $discountCents,
+            $this->discountCents(),
             $country,
             $this->currency,
         );

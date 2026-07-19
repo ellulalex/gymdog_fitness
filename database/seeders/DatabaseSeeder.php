@@ -2,8 +2,10 @@
 
 namespace Database\Seeders;
 
+use App\Models\Discount;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Support\Tenancy\TenantManager;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -15,7 +17,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        Tenant::updateOrCreate(
+        $tenant = Tenant::updateOrCreate(
             ['slug' => 'gymdog'],
             [
                 'name' => 'GymDog Fitness',
@@ -47,6 +49,13 @@ class DatabaseSeeder extends Seeder
                 'name' => env('ADMIN_NAME', 'Alex Ellul'),
                 'password' => Hash::make(env('ADMIN_PASSWORD', 'password')),
             ]
+        );
+
+        // The live 5%-off code (spec §11 / homepage promo).
+        app(TenantManager::class)->set($tenant);
+        Discount::updateOrCreate(
+            ['tenant_id' => $tenant->id, 'code' => 'GYMDOG5'],
+            ['type' => 'percentage', 'value' => 5, 'status' => 'active'],
         );
     }
 }

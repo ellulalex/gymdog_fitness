@@ -13,8 +13,9 @@ class Order extends Model
     protected $fillable = [
         'tenant_id', 'number', 'customer_id', 'email',
         'status', 'payment_status', 'fulfilment_status',
-        'currency', 'subtotal_cents', 'discount_cents', 'shipping_cents',
-        'tax_cents', 'total_cents', 'billing_address', 'shipping_address',
+        'currency', 'subtotal_cents', 'discount_cents', 'discount_code',
+        'shipping_cents', 'tax_cents', 'total_cents',
+        'billing_address', 'shipping_address',
         'stripe_payment_intent_id', 'placed_at',
     ];
 

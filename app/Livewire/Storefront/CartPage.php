@@ -9,6 +9,30 @@ use Livewire\Component;
 
 class CartPage extends Component
 {
+    public string $code = '';
+
+    public ?string $discountError = null;
+
+    public function applyCode(): void
+    {
+        $cart = app(CartManager::class)->current();
+
+        if ($cart->applyCode($this->code)) {
+            $this->code = '';
+            $this->discountError = null;
+            $this->dispatch('cart-updated');
+        } else {
+            $this->discountError = 'That code isn’t valid for this cart.';
+        }
+    }
+
+    public function removeDiscount(): void
+    {
+        app(CartManager::class)->current()->removeDiscount();
+        $this->discountError = null;
+        $this->dispatch('cart-updated');
+    }
+
     public function increment(int $lineId): void
     {
         if ($line = $this->line($lineId)) {
@@ -48,6 +72,7 @@ class CartPage extends Component
         return view('storefront.cart-page', [
             'cart' => $cart,
             'totals' => $cart->totals(),
+            'appliedCode' => $cart->appliedDiscount()?->code,
         ]);
     }
 }

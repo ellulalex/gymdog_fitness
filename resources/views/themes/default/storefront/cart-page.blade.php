@@ -47,10 +47,26 @@
                 </div>
                 @if ($totals->discountCents > 0)
                     <div class="flex justify-between text-sm">
-                        <span class="text-gray-500">Discount</span>
-                        <span>−€{{ number_format($totals->discountCents / 100, 2) }}</span>
+                        <span class="text-gray-500">Discount{{ $appliedCode ? ' ('.$appliedCode.')' : '' }}</span>
+                        <span class="flex items-center gap-2">
+                            −€{{ number_format($totals->discountCents / 100, 2) }}
+                            <button type="button" wire:click="removeDiscount" class="text-gray-300 hover:text-red-500 text-xs" aria-label="Remove discount">✕</button>
+                        </span>
                     </div>
                 @endif
+
+                @unless ($appliedCode)
+                    <div class="pt-1">
+                        <div class="flex gap-2">
+                            <input type="text" wire:model="code" wire:keydown.enter="applyCode" placeholder="Discount code"
+                                   class="flex-1 rounded-lg border-gray-300 text-sm">
+                            <button type="button" wire:click="applyCode" class="rounded-lg px-3 text-sm border border-gray-300 hover:bg-gray-50">Apply</button>
+                        </div>
+                        @if ($discountError)
+                            <p class="text-xs text-red-600 mt-1">{{ $discountError }}</p>
+                        @endif
+                    </div>
+                @endunless
                 <div class="flex justify-between text-sm">
                     <span class="text-gray-500">Shipping</span>
                     <span>{{ $totals->shippingCents === 0 ? 'Free' : '€'.number_format($totals->shippingCents / 100, 2) }}</span>

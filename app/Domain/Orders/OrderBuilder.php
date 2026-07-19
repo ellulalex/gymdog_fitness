@@ -29,11 +29,15 @@ class OrderBuilder
 
         $shipping = $data['shipping_address'] ?? [];
         $country = $shipping['country'] ?? config('tax.default_country');
-        $discount = $data['discount_cents'] ?? 0;
+
+        $discountModel = $cart->appliedDiscount();
+        $discount = $discountModel
+            ? $discountModel->amountFor($cart->subtotalCents())
+            : ($data['discount_cents'] ?? 0);
 
         $totals = $this->totals->calculate($cart->totalLines(), $discount, $country, $cart->currency);
 
-        return DB::transaction(function () use ($cart, $data, $shipping, $country, $totals) {
+        return DB::transaction(function () use ($cart, $data, $shipping, $country, $totals, $discountModel) {
             $order = Order::create([
                 'number' => $this->nextNumber(),
                 'email' => $data['email'],
@@ -42,12 +46,15 @@ class OrderBuilder
                 'currency' => $totals->currency,
                 'subtotal_cents' => $totals->subtotalCents,
                 'discount_cents' => $totals->discountCents,
+                'discount_code' => $discountModel?->code,
                 'shipping_cents' => $totals->shippingCents,
                 'tax_cents' => $totals->taxCents,
                 'total_cents' => $totals->totalCents,
                 'billing_address' => $data['billing_address'] ?? $shipping,
                 'shipping_address' => $shipping,
             ]);
+
+            $discountModel?->increment('used_count');
 
             foreach ($cart->lines as $line) {
                 $variant = $line->variant;
