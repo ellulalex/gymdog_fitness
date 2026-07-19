@@ -15,6 +15,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'stripe/webhook',
         ]);
+
+        // Apply the WordPress-migration redirects table before routing, so old
+        // URLs 301 even when they no longer match any route.
+        $middleware->prepend(\App\Http\Middleware\HandleRedirects::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

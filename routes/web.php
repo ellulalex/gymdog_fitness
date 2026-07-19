@@ -1,9 +1,11 @@
 <?php
 
 use App\Http\Controllers\Storefront\CheckoutConfirmationController;
+use App\Http\Controllers\Storefront\ContentController;
 use App\Http\Controllers\Storefront\HomeController;
 use App\Http\Controllers\Storefront\ProductController;
 use App\Http\Controllers\Storefront\ShopController;
+use App\Http\Controllers\Storefront\SitemapController;
 use App\Http\Controllers\Storefront\StripeWebhookController;
 use Illuminate\Support\Facades\Route;
 
@@ -23,5 +25,13 @@ Route::get('/checkout/confirmation', CheckoutConfirmationController::class)->nam
 // Stripe webhooks are the source of truth for payment state (spec §7).
 Route::post('/stripe/webhook', StripeWebhookController::class)->name('stripe.webhook');
 
-// Content routes arrive in Phase 3.
-Route::view('/blog', 'placeholder', ['heading' => 'Blog'])->name('blog');
+// Content.
+Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
+Route::get('/blog', [ContentController::class, 'blog'])->name('blog');
+Route::get('/category/{postCategory:slug}', [ContentController::class, 'category'])->name('post-category.show');
+
+// Root-level pages & posts — registered LAST so it never shadows the routes
+// above; constrained to a single segment that isn't a reserved app prefix.
+Route::get('/{slug}', [ContentController::class, 'show'])
+    ->where('slug', '^(?!admin|livewire|up|storage|api|sitemap\.xml|shop|cart|checkout|product|product-brands|category|blog|stripe)[A-Za-z0-9\-]+$')
+    ->name('content.show');
