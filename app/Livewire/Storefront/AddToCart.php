@@ -4,6 +4,7 @@ namespace App\Livewire\Storefront;
 
 use App\Models\Product;
 use App\Support\Cart\CartManager;
+use App\Support\Wishlist\WishlistManager;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 
@@ -31,6 +32,12 @@ class AddToCart extends Component
         $this->dispatch('cart-updated');
     }
 
+    public function toggleWishlist(): void
+    {
+        app(WishlistManager::class)->toggle($this->product->id);
+        $this->dispatch('wishlist-updated');
+    }
+
     public function render(): View
     {
         $this->product->load(['brand', 'categories', 'options.values', 'variants.optionValues.option']);
@@ -46,6 +53,7 @@ class AddToCart extends Component
 
         return view('storefront.add-to-cart', [
             'variantsData' => $variantsData,
+            'inWishlist' => app(WishlistManager::class)->has($this->product->id),
         ]);
     }
 }

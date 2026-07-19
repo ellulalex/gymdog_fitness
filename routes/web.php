@@ -19,6 +19,7 @@ Route::get('/shop/{category:slug}', [ShopController::class, 'category'])->name('
 Route::get('/product-brands/{brand:slug}', [ShopController::class, 'brand'])->name('brand.show');
 Route::get('/product/{product:slug}', [ProductController::class, 'show'])->name('product.show');
 Route::view('/cart', 'storefront.cart')->name('cart');
+Route::view('/wishlist', 'storefront.wishlist')->name('wishlist');
 Route::view('/checkout', 'storefront.checkout-page')->name('checkout');
 Route::get('/checkout/confirmation', CheckoutConfirmationController::class)->name('checkout.confirmation');
 

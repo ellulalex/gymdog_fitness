@@ -35,6 +35,7 @@
             <a href="/" class="text-xl font-semibold tracking-tight">{{ $brand }}</a>
             <div class="flex items-center gap-4 text-gray-600">
                 <span aria-hidden="true">🔍</span>
+                <livewire:storefront.wishlist-count />
                 <livewire:storefront.cart-count />
             </div>
         </div>

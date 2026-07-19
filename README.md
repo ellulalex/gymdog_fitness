@@ -9,7 +9,7 @@ Rebuild of [gymdog.fitness](https://gymdog.fitness) off WordPress/WooCommerce, s
 - **Phase 0 — Foundations ✅** — tenancy layer, theme resolution, admin, CI, deploy script.
 - **Phase 1 — Catalogue ✅** — products/variants/nested categories/brands, Filament admin, media library, storefront with faceted filtering.
 - **Phase 2 — Cart & checkout ✅** (code-complete) — guest cart, destination VAT + Malta shipping, discount codes, Stripe Payment Intents, webhooks, order admin, refunds. Live card verification pending test-mode `STRIPE_` keys in `.env`.
-- Phase 3 — Content & CMS + WordPress migration
+- **Phase 3 — Content & CMS ✅** (code-complete) — pages/posts/guides at root URLs, blog, post categories, redirects table + middleware, sitemap, SEO fields, wishlist, Filament admin. WordPress data import (28 items) + DNS cutover pending the live site.
 - Phase 4 — Content automation
 - Phase 5 — Productisation (multi-tenant SaaS)
 

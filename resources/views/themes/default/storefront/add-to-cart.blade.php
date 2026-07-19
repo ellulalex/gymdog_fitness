@@ -54,6 +54,16 @@
             <span wire:loading.remove wire:target="add">Add to cart</span>
             <span wire:loading wire:target="add">Adding…</span>
         </button>
+        <button type="button" wire:click="toggleWishlist"
+                @class([
+                    'h-11 w-11 shrink-0 rounded-full border flex items-center justify-center text-lg',
+                    'border-gray-300 text-gray-500' => ! $inWishlist,
+                    'border-transparent text-white' => $inWishlist,
+                ])
+                @style(['background: var(--brand-accent)' => $inWishlist])
+                aria-label="Toggle wishlist">
+            {{ $inWishlist ? '♥' : '♡' }}
+        </button>
     </div>
 
     @if ($added)
