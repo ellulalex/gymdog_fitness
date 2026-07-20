@@ -14,6 +14,8 @@
     @hasSection('meta_description')
         <meta name="description" content="@yield('meta_description')">
     @endif
+    <link rel="canonical" href="{{ url()->current() }}">
+    @stack('head')
     <style>
         :root {
             --brand-primary: {{ $primary }};

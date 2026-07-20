@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Posts\Schemas;
 
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -62,7 +63,18 @@ class PostForm
                     ->collapsed()
                     ->schema([
                         TextInput::make('meta_title'),
+                        TextInput::make('focus_keyword')
+                            ->helperText('The primary keyword this article targets.'),
                         Textarea::make('meta_description')->columnSpanFull(),
+                        Repeater::make('faq')
+                            ->label('FAQ (rendered as FAQ rich results)')
+                            ->columnSpanFull()
+                            ->schema([
+                                TextInput::make('question')->required(),
+                                Textarea::make('answer')->required()->rows(2),
+                            ])
+                            ->defaultItems(0)
+                            ->collapsible(),
                     ]),
             ]);
     }

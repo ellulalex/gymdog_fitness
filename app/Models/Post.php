@@ -16,13 +16,14 @@ class Post extends Model
     protected $fillable = [
         'tenant_id', 'author_id', 'type', 'slug', 'title', 'excerpt', 'body',
         'status', 'published_at', 'source', 'generation_meta',
-        'meta_title', 'meta_description',
+        'meta_title', 'meta_description', 'focus_keyword', 'faq',
     ];
 
     protected function casts(): array
     {
         return [
             'generation_meta' => 'array',
+            'faq' => 'array',
             'published_at' => 'datetime',
         ];
     }

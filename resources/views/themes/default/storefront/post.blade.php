@@ -5,6 +5,10 @@
     @section('meta_description', $post->meta_description)
 @endif
 
+@push('head')
+    @include('storefront.partials.article-seo', ['post' => $post])
+@endpush
+
 @section('content')
     <article class="mx-auto max-w-3xl px-6 py-16">
         @if ($post->type === 'guide')
@@ -26,5 +30,19 @@
         <div class="prose prose-neutral mt-8 max-w-none">
             {!! $post->body !!}
         </div>
+
+        @if (! empty($post->faq))
+            <section class="mt-12 border-t border-gray-100 pt-8">
+                <h2 class="text-2xl font-light tracking-tight">Frequently asked questions</h2>
+                <div class="mt-4 divide-y divide-gray-100">
+                    @foreach ($post->faq as $item)
+                        <details class="py-3">
+                            <summary class="cursor-pointer font-medium">{{ $item['question'] ?? '' }}</summary>
+                            <p class="mt-2 text-gray-600">{{ $item['answer'] ?? '' }}</p>
+                        </details>
+                    @endforeach
+                </div>
+            </section>
+        @endif
     </article>
 @endsection
