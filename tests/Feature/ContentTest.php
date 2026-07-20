@@ -73,7 +73,8 @@ it('lists movement guides in the header CrossFit menu', function () {
     Post::factory()->guide()->create(['slug' => 'the-power-clean', 'title' => 'The Power Clean']);
     Post::factory()->create(['title' => 'A Normal Article']); // not a guide
 
-    $this->get('/')
+    // The shop page has the nav but no articles section, isolating the nav.
+    $this->get('/shop')
         ->assertOk()
         ->assertSee('CrossFit', false)
         ->assertSee('The Power Clean')      // guide is in the nav

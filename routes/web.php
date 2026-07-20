@@ -5,6 +5,7 @@ use App\Http\Controllers\Storefront\AccountController;
 use App\Http\Controllers\Storefront\CheckoutConfirmationController;
 use App\Http\Controllers\Storefront\ContentController;
 use App\Http\Controllers\Storefront\CustomerAuthController;
+use App\Http\Controllers\Storefront\CustomerPasswordController;
 use App\Http\Controllers\Storefront\HomeController;
 use App\Http\Controllers\Storefront\ProductController;
 use App\Http\Controllers\Storefront\ShopController;
@@ -32,6 +33,12 @@ Route::get('/register', [CustomerAuthController::class, 'showRegister'])->name('
 Route::post('/register', [CustomerAuthController::class, 'register']);
 Route::post('/logout', [CustomerAuthController::class, 'logout'])->name('logout');
 Route::get('/account', [AccountController::class, 'dashboard'])->name('account')->middleware('auth:customer');
+
+// Password reset (customers).
+Route::get('/forgot-password', [CustomerPasswordController::class, 'request'])->name('password.request');
+Route::post('/forgot-password', [CustomerPasswordController::class, 'email'])->name('password.email');
+Route::get('/reset-password/{token}', [CustomerPasswordController::class, 'reset'])->name('password.reset');
+Route::post('/reset-password', [CustomerPasswordController::class, 'update'])->name('password.update');
 Route::view('/checkout', 'storefront.checkout-page')->name('checkout');
 Route::get('/checkout/confirmation', CheckoutConfirmationController::class)->name('checkout.confirmation');
 
@@ -52,5 +59,5 @@ Route::get('/category/{postCategory:slug}', [ContentController::class, 'category
 // Root-level pages & posts — registered LAST so it never shadows the routes
 // above; constrained to a single segment that isn't a reserved app prefix.
 Route::get('/{slug}', [ContentController::class, 'show'])
-    ->where('slug', '^(?!admin|livewire|up|storage|api|sitemap\.xml|shop|cart|checkout|product|product-brands|category|blog|stripe|search|login|register|logout|account|wishlist|horizon)[A-Za-z0-9\-]+$')
+    ->where('slug', '^(?!admin|livewire|up|storage|api|sitemap\.xml|shop|cart|checkout|product|product-brands|category|blog|stripe|search|login|register|logout|account|wishlist|horizon|forgot-password|reset-password)[A-Za-z0-9\-]+$')
     ->name('content.show');
