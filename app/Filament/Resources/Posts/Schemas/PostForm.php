@@ -48,6 +48,14 @@ class PostForm
                             ->columnSpanFull(),
                         RichEditor::make('body')
                             ->columnSpanFull(),
+                        TextInput::make('featured_image')
+                            ->label('Featured image URL')
+                            ->url()
+                            ->columnSpanFull()
+                            ->helperText('Auto-filled for generated posts. Shown as the hero image and og:image.'),
+                        TextInput::make('featured_image_credit')
+                            ->label('Image credit')
+                            ->columnSpanFull(),
                     ]),
                 Section::make('Publishing')
                     ->columns(2)

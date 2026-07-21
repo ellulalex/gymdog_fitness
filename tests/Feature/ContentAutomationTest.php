@@ -65,6 +65,39 @@ it('persists the SEO fields (meta, keyword, FAQ) and image query from the draft'
         ->and($post->generation_meta['word_count'])->toBeGreaterThan(0);
 });
 
+it('applies internal links and a featured image to a generated post', function () {
+    Illuminate\Support\Facades\Storage::fake('public');
+    config()->set('content.auto_publish', false);
+    config()->set('content.images.provider', 'unsplash');
+    config()->set('services.unsplash.access_key', 'test-key');
+    Illuminate\Support\Facades\Http::fake([
+        'api.unsplash.com/search/photos*' => Illuminate\Support\Facades\Http::response(['results' => [[
+            'urls' => ['regular' => 'https://images.unsplash.com/p.jpg'],
+            'user' => ['name' => 'Jane Doe'],
+        ]]]),
+        'images.unsplash.com/*' => Illuminate\Support\Facades\Http::response('BYTES', 200),
+    ]);
+
+    // An existing published post the new article can link to.
+    Post::factory()->create(['slug' => 'jump-rope-guide', 'title' => 'Jump Rope Guide', 'focus_keyword' => 'jump rope']);
+
+    useGenerator(new GeneratedDraft(
+        title: 'Conditioning Basics',
+        excerpt: 'A guide.',
+        body: longBody('Start with jump rope work. '),
+        focusKeyword: 'conditioning',
+        imageQuery: 'jump rope',
+    ));
+    Topic::factory()->create();
+
+    $post = app(GenerationPipeline::class)->run();
+
+    expect($post->featured_image)->not->toBeNull()
+        ->and($post->featured_image_credit)->toBe('Photo by Jane Doe on Unsplash')
+        ->and($post->body)->toContain('<a href="/jump-rope-guide">jump rope</a>')
+        ->and($post->generation_meta['internal_links'])->toBe(1);
+});
+
 it('schedules a clean draft with the brake and emails a reject link when auto-publish is on', function () {
     config()->set('content.auto_publish', true);
     config()->set('content.brake_hours', 24);

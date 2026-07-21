@@ -45,6 +45,39 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Auto-illustration
+    |--------------------------------------------------------------------------
+    |
+    | Fetch a relevant stock photo for each generated article from a free API
+    | (Unsplash preferred, Pexels fallback) using the model's image query.
+    | Silently skipped when no provider key is configured — the article still
+    | publishes, just without a hero image.
+    |
+    */
+
+    'images' => [
+        'provider' => env('CONTENT_IMAGE_PROVIDER', 'unsplash'), // unsplash | pexels
+        'orientation' => 'landscape',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Internal linking
+    |--------------------------------------------------------------------------
+    |
+    | After a draft is written, link the first mention of an existing published
+    | post's focus keyword (or title) to that post — spreading link equity and
+    | keeping readers on-site. Capped so articles don't read as link farms.
+    |
+    */
+
+    'internal_links' => [
+        'enabled' => (bool) env('CONTENT_INTERNAL_LINKS', true),
+        'max' => (int) env('CONTENT_INTERNAL_LINKS_MAX', 4),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Quality gates
     |--------------------------------------------------------------------------
     */

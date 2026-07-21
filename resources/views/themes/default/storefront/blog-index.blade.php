@@ -22,7 +22,12 @@
             <div class="mt-10 grid grid-cols-1 md:grid-cols-3 gap-8">
                 @foreach ($posts as $post)
                     <a href="{{ url('/'.$post->slug) }}" class="block group">
-                        <div class="aspect-video rounded-xl bg-gray-50 mb-3"></div>
+                        @if ($post->featured_image)
+                            <img src="{{ $post->featured_image }}" alt="{{ $post->title }}"
+                                 class="aspect-video w-full rounded-xl object-cover mb-3" loading="lazy">
+                        @else
+                            <div class="aspect-video rounded-xl bg-gray-50 mb-3"></div>
+                        @endif
                         <p class="text-xs text-gray-400">
                             @if ($post->published_at){{ $post->published_at->format('d M Y') }}@endif
                         </p>

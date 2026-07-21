@@ -22,6 +22,8 @@ class GenerationPipeline
     public function __construct(
         private readonly ContentGenerator $generator,
         private readonly QualityGates $gates,
+        private readonly ImageFetcher $images,
+        private readonly InternalLinker $linker,
     ) {}
 
     public function run(): ?Post
@@ -42,12 +44,19 @@ class GenerationPipeline
         $autoPublish = config('content.auto_publish');
         $schedule = $passed && $autoPublish;
 
+        // Post-process: link the first mention of existing posts, and fetch a
+        // hero image. Both degrade gracefully — neither can block publishing.
+        $linked = $this->linker->link($draft->body);
+        $image = $this->images->fetch($draft->imageQuery ?: $draft->focusKeyword);
+
         $post = Post::create([
             'type' => 'post',
             'title' => $draft->title,
             'slug' => $this->uniqueSlug($draft->title),
             'excerpt' => $draft->excerpt,
-            'body' => $draft->body,
+            'body' => $linked['html'],
+            'featured_image' => $image?->url,
+            'featured_image_credit' => $image?->credit,
             'meta_title' => $draft->metaTitle ?: null,
             'meta_description' => $draft->metaDescription ?: null,
             'focus_keyword' => $draft->focusKeyword ?: null,
@@ -60,6 +69,8 @@ class GenerationPipeline
                 'topic_id' => $topic->id,
                 'generated_at' => now()->toIso8601String(),
                 'image_query' => $draft->imageQuery,
+                'image_credit' => $image?->credit,
+                'internal_links' => $linked['count'],
                 'word_count' => $draft->wordCount(),
                 'violations' => $violations,
             ],

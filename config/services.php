@@ -39,6 +39,15 @@ return [
         'key' => env('ANTHROPIC_API_KEY'),
     ],
 
+    // Free stock-image APIs for auto-illustrating generated articles.
+    'unsplash' => [
+        'access_key' => env('UNSPLASH_ACCESS_KEY'),
+    ],
+
+    'pexels' => [
+        'key' => env('PEXELS_API_KEY'),
+    ],
+
     'stripe' => [
         'key' => env('STRIPE_KEY'),
         'secret' => env('STRIPE_SECRET'),

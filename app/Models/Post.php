@@ -15,6 +15,7 @@ class Post extends Model
 
     protected $fillable = [
         'tenant_id', 'author_id', 'type', 'slug', 'title', 'excerpt', 'body',
+        'featured_image', 'featured_image_credit',
         'status', 'published_at', 'source', 'generation_meta',
         'meta_title', 'meta_description', 'focus_keyword', 'faq',
     ];

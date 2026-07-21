@@ -2,10 +2,13 @@
     $brand = $tenant?->name ?? config('app.name');
     $url = url('/'.$post->slug);
     $desc = $post->meta_description ?: ($post->excerpt ?: Str::of(strip_tags($post->body))->limit(160));
-    // First inline image, if any, for og:image / Article image.
-    $image = null;
-    if (preg_match('/<img[^>]+src="([^"]+)"/i', (string) $post->body, $m)) {
+    // Featured image first, else the first inline image, for og:image / Article image.
+    $image = $post->featured_image;
+    if (! $image && preg_match('/<img[^>]+src="([^"]+)"/i', (string) $post->body, $m)) {
         $image = $m[1];
+    }
+    if ($image) {
+        $image = \Illuminate\Support\Str::startsWith($image, ['http://', 'https://']) ? $image : url($image);
     }
 
     $article = array_filter([

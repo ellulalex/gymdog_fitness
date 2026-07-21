@@ -27,6 +27,16 @@
                 @endforeach
             </div>
         @endif
+        @if ($post->featured_image)
+            <figure class="mt-8">
+                <img src="{{ $post->featured_image }}" alt="{{ $post->title }}"
+                     class="w-full rounded-xl object-cover" loading="lazy">
+                @if ($post->featured_image_credit)
+                    <figcaption class="mt-2 text-xs text-gray-400">{{ $post->featured_image_credit }}</figcaption>
+                @endif
+            </figure>
+        @endif
+
         <div class="prose prose-neutral mt-8 max-w-none">
             {!! $post->body !!}
         </div>
