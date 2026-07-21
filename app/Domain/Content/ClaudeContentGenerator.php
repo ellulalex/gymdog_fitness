@@ -70,22 +70,25 @@ class ClaudeContentGenerator implements ContentGenerator
             $args['tools'] = [[
                 'type' => 'web_search_20260209',
                 'name' => 'web_search',
-                'max_uses' => 5,
+                'max_uses' => (int) config('content.web_search_max_uses', 5),
             ]];
         }
 
-        $message = $client->messages->create(...$args);
-
-        return $this->parse($this->text($message));
+        // Stream, not a single blocking request: a grounded ~2000-word article
+        // runs the search-then-write loop server-side and can take many minutes.
+        // Streaming keeps bytes flowing so it can't hit the non-streaming idle
+        // timeout, and lets the full generation complete reliably.
+        return $this->parse($this->stream($client->messages->createStream(...$args)));
     }
 
-    /** Concatenate the text content blocks of the response (skips tool blocks). */
-    private function text(object $message): string
+    /** Accumulate the text deltas of a streamed response (skips tool/thinking blocks). */
+    private function stream(iterable $events): string
     {
         $text = '';
-        foreach ($message->content as $block) {
-            if (($block->type ?? null) === 'text') {
-                $text .= $block->text;
+        foreach ($events as $event) {
+            if (($event->type ?? null) === 'content_block_delta'
+                && ($event->delta->type ?? null) === 'text_delta') {
+                $text .= $event->delta->text;
             }
         }
 

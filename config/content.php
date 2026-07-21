@@ -36,6 +36,8 @@ return [
     // — important for event coverage). Bounded to a few searches per article.
     'web_search' => (bool) env('CONTENT_WEB_SEARCH', true),
 
+    'web_search_max_uses' => (int) env('CONTENT_WEB_SEARCH_MAX_USES', 5),
+
     'target_words' => (int) env('CONTENT_TARGET_WORDS', 2000),
 
     // Falls back to the tenant's `brand_voice` setting when present.
