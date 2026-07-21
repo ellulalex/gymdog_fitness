@@ -50,6 +50,21 @@ it('generates a draft post, tags it and marks the topic used (human-approval mod
     Mail::assertNothingSent();
 });
 
+it('persists the SEO fields (meta, keyword, FAQ) and image query from the draft', function () {
+    config()->set('content.auto_publish', false);
+    useGenerator();
+    Topic::factory()->create(['title' => 'jump rope basics']);
+
+    $post = app(GenerationPipeline::class)->run();
+
+    expect($post->meta_title)->toBe('Guide to jump rope basics')
+        ->and($post->meta_description)->toBe('A practical guide to jump rope basics.')
+        ->and($post->focus_keyword)->toBe('jump rope basics')
+        ->and($post->faq)->toBe([['question' => 'Where do I start?', 'answer' => 'With the basics.']])
+        ->and($post->generation_meta['image_query'])->toBe('crossfit training')
+        ->and($post->generation_meta['word_count'])->toBeGreaterThan(0);
+});
+
 it('schedules a clean draft with the brake and emails a reject link when auto-publish is on', function () {
     config()->set('content.auto_publish', true);
     config()->set('content.brake_hours', 24);

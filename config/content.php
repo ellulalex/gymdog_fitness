@@ -29,7 +29,14 @@ return [
 
     'model' => env('CONTENT_MODEL', 'claude-opus-4-8'),
 
-    'max_tokens' => (int) env('CONTENT_MAX_TOKENS', 4000),
+    // Headroom for a ~2000-word article plus meta + FAQ as JSON.
+    'max_tokens' => (int) env('CONTENT_MAX_TOKENS', 8000),
+
+    // Ground drafts in current facts via Claude's web search (freshness/accuracy
+    // — important for event coverage). Bounded to a few searches per article.
+    'web_search' => (bool) env('CONTENT_WEB_SEARCH', true),
+
+    'target_words' => (int) env('CONTENT_TARGET_WORDS', 2000),
 
     // Falls back to the tenant's `brand_voice` setting when present.
     'brand_voice' => 'Knowledgeable, encouraging CrossFit coach writing for a Maltese audience. Practical, never hype.',

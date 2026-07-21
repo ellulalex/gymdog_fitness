@@ -21,6 +21,13 @@ class FakeContentGenerator implements ContentGenerator
             title: 'Guide to '.$topic->title,
             excerpt: 'A practical guide.',
             body: '<p>'.str_repeat('training tip about grips and ropes. ', 80).'</p>',
+            metaTitle: 'Guide to '.$topic->title,
+            metaDescription: 'A practical guide to '.$topic->title.'.',
+            focusKeyword: mb_strtolower($topic->title),
+            faq: [
+                ['question' => 'Where do I start?', 'answer' => 'With the basics.'],
+            ],
+            imageQuery: 'crossfit training',
         );
     }
 }
