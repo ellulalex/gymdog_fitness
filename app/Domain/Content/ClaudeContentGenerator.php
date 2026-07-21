@@ -57,6 +57,10 @@ class ClaudeContentGenerator implements ContentGenerator
         if ($topic->angle) {
             $prompt .= "\nAngle to take: {$topic->angle}";
         }
+        if ($topic->focus_keyword) {
+            $prompt .= "\nTarget this focus keyword exactly: \"{$topic->focus_keyword}\" — use it in the title,"
+                .' meta and naturally through the body, and return it as focus_keyword.';
+        }
         $prompt .= "\n\nResearch as needed, then return the JSON.";
 
         $args = [

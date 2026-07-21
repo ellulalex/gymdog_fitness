@@ -11,7 +11,7 @@ class Topic extends Model
 {
     use BelongsToTenant, HasFactory;
 
-    protected $fillable = ['tenant_id', 'title', 'angle', 'status', 'position', 'used_at'];
+    protected $fillable = ['tenant_id', 'title', 'angle', 'focus_keyword', 'status', 'position', 'used_at'];
 
     protected function casts(): array
     {

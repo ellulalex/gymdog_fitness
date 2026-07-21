@@ -125,6 +125,24 @@ it('never schedules a draft that trips the banned-claims gate', function () {
     Mail::assertNothingSent();
 });
 
+it('does not flag ordinary non-medical use of treat/heal/fix', function () {
+    $gates = app(QualityGates::class);
+    $body = longBody('The progression treats the squat as the entry point. Treat yourself to a rest day; good sleep heals the week and helps you fix your form. ');
+
+    $violations = $gates->check(new GeneratedDraft('Squat progressions for beginners', 'x', $body));
+
+    expect($violations)->toBe([]);
+});
+
+it('flags a genuine medical claim (treat/cure + ailment)', function () {
+    $gates = app(QualityGates::class);
+    $body = longBody('This routine treats your back pain and cures arthritis fast. ');
+
+    $violations = $gates->check(new GeneratedDraft('Bad medical article', 'x', $body));
+
+    expect($violations)->toContain('Contains a medical/banned-claim phrase — needs human review.');
+});
+
 it('flags a too-short draft', function () {
     $gates = app(QualityGates::class);
 

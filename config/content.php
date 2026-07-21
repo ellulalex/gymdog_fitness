@@ -78,6 +78,22 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Topic research
+    |--------------------------------------------------------------------------
+    |
+    | `content:research-topics` uses Claude + web search to keep the queue
+    | stocked with fresh, search-driven topics (deduped against what's already
+    | queued or written) so the generator never runs dry.
+    |
+    */
+
+    'research' => [
+        'default_count' => (int) env('CONTENT_RESEARCH_COUNT', 5),
+        'niche' => env('CONTENT_RESEARCH_NICHE', 'functional fitness, Hyrox, CrossFit, and related fitness events'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Quality gates
     |--------------------------------------------------------------------------
     */
@@ -120,6 +136,27 @@ return [
 
         // Post categories to skip.
         'skip_categories' => ['uncategorized'],
+
+        // Concise focus keywords for cornerstone imported content, so it becomes
+        // a matchable internal-link hub (imported titles are long sentences that
+        // never appear verbatim in body text). Applied on import; survives a
+        // production re-import. slug => keyword.
+        'focus_keywords' => [
+            // Movement guides — the how-to link hubs.
+            'thruster' => 'thruster',
+            'the-power-clean' => 'power clean',
+            '9-foundational-movements' => 'foundational movements',
+            'the-devils-press' => 'devils press',
+            'gymnastics-in-crossfit' => 'gymnastics in crossfit',
+            'cardiovascular-fitness' => 'cardiovascular fitness',
+            'weightlifting-in-crossfit' => 'weightlifting in crossfit',
+            'crossfit-boxes-in-malta' => 'crossfit boxes in malta',
+            // Marquee posts.
+            'are-crossfit-and-hyrox-the-same' => 'crossfit and hyrox',
+            'getting-started-in-crossfit' => 'getting started in crossfit',
+            'why-train-the-core-and-not-just-abs' => 'core training',
+            'how-to-watch-the-2025-crossfit-games' => 'crossfit games',
+        ],
     ],
 
     /*
@@ -128,18 +165,23 @@ return [
     | health outcomes. This is regulatory exposure, not just quality (spec §9).
     | A post tripping any pattern is never auto-published; it is flagged for
     | human review.
+    |
+    | Patterns are deliberately context-aware: "cure/heal/treat" only trip when
+    | attached to an ailment, so ordinary usage ("the progression treats the
+    | squat as...", "treat yourself to a rest day") doesn't create noise that
+    | would push every article into manual review.
     */
     'banned_patterns' => [
-        '/\bcures?\b/i',
-        '/\btreats?\b/i',
-        '/\bdiagnos(e|is|ing)\b/i',
-        '/\bprevents? (disease|illness|cancer)\b/i',
+        // Health-outcome claims: cure/heal/treat/reverse/fix + an ailment.
+        '/\b(cure|cures|cured|curing|heal|heals|healed|healing|treat|treats|treated|treating|reverse|reverses|reversed|fix|fixes|fixed)\s+(your\s+|a\s+|an\s+|the\s+|chronic\s+|acute\s+|any\s+)*(injur|pain|ache|disease|illness|condition|arthritis|tendon|tendin|bursitis|sprain|strain|inflammation|depression|anxiety|diabetes|cancer|symptom|ailment|disorder)/i',
+        // Prevention-of-disease claims.
+        '/\bprevents?\s+(your\s+|a\s+|an\s+|the\s+|any\s+)*(disease|illness|cancer|diabetes|arthritis|injury|injuries|infection)/i',
+        // Diagnosis / prescription / dosage.
+        '/\bdiagnos(e|es|ed|is|ing)\b/i',
+        '/\bprescrib(e|es|ed|ing)\b/i',
         '/\bdosage\b/i',
-        '/\bmg\b/i',
-        '/\bprescrib/i',
-        '/\bheals?\b/i',
-        '/\bmedical(ly)?\b/i',
-        '/\bsupplements? (cure|heal|treat)/i',
+        '/\b\d+\s?mg\b/i',
+        '/\bsupplements?\s+(that\s+)?(cure|heal|treat|prevent)/i',
     ],
 
 ];

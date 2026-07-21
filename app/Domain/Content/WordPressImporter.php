@@ -117,18 +117,22 @@ class WordPressImporter
     /** @param  array<int,int>  $categoryMap */
     private function upsertPost(array $item, string $type, array $categoryMap): Post
     {
-        $post = Post::updateOrCreate(
-            ['slug' => $item['slug']],
-            [
-                'type' => $type,
-                'title' => $this->title($item),
-                'excerpt' => Str::limit($this->plain($item['excerpt']['rendered'] ?? ''), 280, ''),
-                'body' => $this->body($item),
-                'status' => $this->status($item),
-                'published_at' => $this->date($item),
-                'source' => 'human',
-            ],
-        );
+        $attributes = [
+            'type' => $type,
+            'title' => $this->title($item),
+            'excerpt' => Str::limit($this->plain($item['excerpt']['rendered'] ?? ''), 280, ''),
+            'body' => $this->body($item),
+            'status' => $this->status($item),
+            'published_at' => $this->date($item),
+            'source' => 'human',
+        ];
+
+        // Curated focus keyword makes cornerstone content a link hub.
+        if ($keyword = config('content.wordpress.focus_keywords')[$item['slug']] ?? null) {
+            $attributes['focus_keyword'] = $keyword;
+        }
+
+        $post = Post::updateOrCreate(['slug' => $item['slug']], $attributes);
 
         $ourIds = array_values(array_filter(array_map(
             fn ($wpId) => $categoryMap[$wpId] ?? null,
