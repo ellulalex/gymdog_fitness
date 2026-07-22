@@ -35,8 +35,10 @@ class BackfillFeaturedImagesCommand extends Command
                 continue;
             }
 
-            // 2. Fetch a relevant stock photo.
-            $image = $fetcher->fetch($post->focus_keyword ?: $this->queryFromTitle($post->title));
+            // 2. Fetch a relevant stock photo, falling back to a generic fitness
+            // query when the specific one (a name, a rare movement) finds nothing.
+            $image = $fetcher->fetch($post->focus_keyword ?: $this->queryFromTitle($post->title))
+                ?? $fetcher->fetch('crossfit gym workout');
             if ($image) {
                 $post->update(['featured_image' => $image->url, 'featured_image_credit' => $image->credit]);
                 $fetched++;
