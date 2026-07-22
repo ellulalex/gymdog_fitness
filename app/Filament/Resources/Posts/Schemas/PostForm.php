@@ -64,7 +64,12 @@ class PostForm
                             ->required()
                             ->default('draft')
                             ->options(['draft' => 'Draft', 'published' => 'Published']),
-                        DateTimePicker::make('published_at'),
+                        DateTimePicker::make('published_at')
+                            // Display/enter in Malta time; stored as UTC. Without
+                            // this the picked value is treated as UTC and a post
+                            // published "now" lands ~2h in the future and hides.
+                            ->timezone('Europe/Malta')
+                            ->helperText('Leave empty to publish immediately. Malta time.'),
                     ]),
                 Section::make('SEO')
                     ->columns(2)

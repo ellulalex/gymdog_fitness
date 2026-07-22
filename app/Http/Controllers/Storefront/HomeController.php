@@ -14,7 +14,7 @@ class HomeController extends Controller
     {
         return view('home', [
             'featured' => Product::active()->with(['brand', 'variants'])->latest()->take(8)->get(),
-            'articles' => Post::published()->articles()->latest('published_at')->take(3)->get(),
+            'articles' => Post::published()->articles()->latestPublished()->take(3)->get(),
             'promo' => Discount::where('status', 'active')->orderBy('id')->first(),
         ]);
     }

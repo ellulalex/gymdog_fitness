@@ -45,6 +45,15 @@ class Post extends Model
             ->where(fn (Builder $q) => $q->whereNull('published_at')->orWhere('published_at', '<=', now()));
     }
 
+    /**
+     * Newest first, but a published post with no published_at falls back to its
+     * created_at instead of sorting to the very end (NULLs last in DESC).
+     */
+    public function scopeLatestPublished(Builder $query): Builder
+    {
+        return $query->orderByRaw('COALESCE(published_at, created_at) DESC');
+    }
+
     public function scopeArticles(Builder $query): Builder
     {
         return $query->where('type', 'post');

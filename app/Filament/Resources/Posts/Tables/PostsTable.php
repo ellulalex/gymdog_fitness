@@ -79,7 +79,11 @@ class PostsTable
                     ->modalHeading('Publish this post?')
                     ->action(fn (Post $record) => $record->update([
                         'status' => 'published',
-                        'published_at' => $record->published_at ?? now(),
+                        // Publish now: keep a genuine past date, but replace a
+                        // missing or future one so the post is live immediately.
+                        'published_at' => ($record->published_at && $record->published_at->isPast())
+                            ? $record->published_at
+                            : now(),
                     ])),
                 EditAction::make(),
             ])

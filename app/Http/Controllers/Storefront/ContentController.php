@@ -15,7 +15,7 @@ class ContentController extends Controller
     {
         return view('storefront.blog-index', [
             'title' => 'Blog',
-            'posts' => Post::published()->articles()->latest('published_at')->paginate(9),
+            'posts' => Post::published()->articles()->latestPublished()->paginate(9),
             'categories' => PostCategory::orderBy('name')->get(),
         ]);
     }
@@ -24,7 +24,7 @@ class ContentController extends Controller
     {
         return view('storefront.blog-index', [
             'title' => $postCategory->name,
-            'posts' => $postCategory->posts()->published()->latest('published_at')->paginate(9),
+            'posts' => $postCategory->posts()->published()->latestPublished()->paginate(9),
             'categories' => PostCategory::orderBy('name')->get(),
         ]);
     }

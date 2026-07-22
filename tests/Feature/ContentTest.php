@@ -40,6 +40,19 @@ it('lists articles on the blog but not guides', function () {
         ->assertDontSee('guide-marker');
 });
 
+it('lists a published article that has no published_at date', function () {
+    // An older post with a real date, plus a just-published one with no date.
+    Post::factory()->create(['title' => 'Dated Article', 'published_at' => now()->subMonth()]);
+    Post::factory()->create(['title' => 'Undated Article', 'excerpt' => 'undated-marker', 'published_at' => null]);
+
+    $res = $this->get('/blog')->assertOk()->assertSee('undated-marker');
+
+    // COALESCE(published_at, created_at) keeps the newer undated post ahead of
+    // the month-old dated one, instead of sorting NULLs to the very end.
+    expect(strpos($res->getContent(), 'Undated Article'))
+        ->toBeLessThan(strpos($res->getContent(), 'Dated Article'));
+});
+
 it('shows a post category page', function () {
     $category = PostCategory::create(['slug' => 'crossfit', 'name' => 'CrossFit']);
     $post = Post::factory()->create(['title' => 'Open Recap']);
