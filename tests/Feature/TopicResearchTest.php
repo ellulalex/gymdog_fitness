@@ -83,6 +83,27 @@ it('passes existing titles to the researcher so it can avoid them', function () 
         ->and($fake->calledWithAvoid)->toContain('Existing post title');
 });
 
+it('tops the queue up to --ensure only when it is below target', function () {
+    Topic::factory()->count(3)->create(['status' => 'queued']);
+    $fake = useResearcher([new ProposedTopic('Filler topic one'), new ProposedTopic('Filler topic two')]);
+
+    // Queue has 3, ensure 5 → research exactly 2.
+    $this->artisan('content:research-topics', ['--ensure' => 5])->assertSuccessful();
+    expect($fake->calledWithCount)->toBe(2);
+});
+
+it('skips the API call when the queue already meets --ensure', function () {
+    Topic::factory()->count(6)->create(['status' => 'queued']);
+    $fake = useResearcher([new ProposedTopic('Should not be used')]);
+
+    $this->artisan('content:research-topics', ['--ensure' => 5])
+        ->expectsOutputToContain('nothing to research')
+        ->assertSuccessful();
+
+    expect($fake->calledWithCount)->toBe(0)                 // never invoked
+        ->and(Topic::where('title', 'Should not be used')->exists())->toBeFalse();
+});
+
 it('runs the command against the queue', function () {
     useResearcher([new ProposedTopic('Grip strength for pull-ups', 'Practical drills', 'grip strength')]);
 
