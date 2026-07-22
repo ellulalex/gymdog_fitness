@@ -87,7 +87,12 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 @foreach ($articles as $post)
                     <a href="{{ url('/'.$post->slug) }}" class="block group">
-                        <div class="aspect-video rounded-xl bg-gray-50 mb-3"></div>
+                        @if ($post->featured_image)
+                            <img src="{{ $post->featured_image }}" alt="{{ $post->title }}"
+                                 class="aspect-video w-full rounded-xl object-cover mb-3" loading="lazy">
+                        @else
+                            <div class="aspect-video rounded-xl bg-gray-50 mb-3"></div>
+                        @endif
                         <p class="text-xs text-gray-400">{{ optional($post->published_at)->format('d M Y') }}</p>
                         <h3 class="mt-1 font-medium group-hover:text-[var(--brand-primary)]">{{ $post->title }}</h3>
                         @if ($post->excerpt)
