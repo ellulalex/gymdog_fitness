@@ -3,6 +3,7 @@
 use App\Domain\Orders\OrderBuilder;
 use App\Domain\Payments\PaymentGateway;
 use App\Livewire\Storefront\Checkout;
+use App\Mail\NewOrderNotification;
 use App\Mail\OrderConfirmation;
 use App\Models\Order;
 use App\Models\Product;
@@ -21,6 +22,25 @@ beforeEach(function () {
     $this->gateway = new FakePaymentGateway;
     app()->instance(PaymentGateway::class, $this->gateway);
 });
+
+/** Build an order and drive it through a successful payment webhook. */
+function payOrderViaWebhook(): Order
+{
+    app(CartManager::class)->current()->add(seedVariant(), 1);
+    $order = app(OrderBuilder::class)->fromCart(
+        app(CartManager::class)->current()->load('lines.variant.product'),
+        ['email' => 'buyer@example.com', 'shipping_address' => ['country' => 'MT']],
+    );
+    app(PaymentGateway::class)->createIntent($order);
+    // Unique event id per call — a repeat would hit the idempotency guard.
+    test()->postJson('/stripe/webhook', fakeEvent(
+        'payment_intent.succeeded',
+        $order->stripe_payment_intent_id,
+        'evt_'.$order->id,
+    ));
+
+    return $order;
+}
 
 function seedVariant(int $price = 3000, int $stock = 5): ProductVariant
 {
@@ -102,7 +122,59 @@ it('ignores a duplicate webhook delivery', function () {
 
     expect($variant->fresh()->stock_qty)->toBe(3) // decremented once, not twice
         ->and(StripeEvent::count())->toBe(1);
-    Mail::assertSentCount(1);
+    Mail::assertSent(OrderConfirmation::class, 1);
+});
+
+it('notifies the shop of a new order, replying to the customer', function () {
+    Mail::fake();
+    config()->set('orders.notify_email', 'alexellul89@gmail.com');
+    $variant = seedVariant(3000, 5);
+    app(CartManager::class)->current()->add($variant, 2);
+    $order = app(OrderBuilder::class)->fromCart(
+        app(CartManager::class)->current()->load('lines.variant.product'),
+        ['email' => 'buyer@example.com', 'shipping_address' => ['country' => 'MT']],
+    );
+    app(PaymentGateway::class)->createIntent($order);
+
+    $this->postJson('/stripe/webhook', fakeEvent('payment_intent.succeeded', $order->stripe_payment_intent_id))
+        ->assertOk();
+
+    Mail::assertSent(NewOrderNotification::class, function ($mail) use ($order) {
+        return $mail->hasTo('alexellul89@gmail.com')
+            && $mail->hasReplyTo($order->email)          // reply reaches the buyer
+            && $mail->order->is($order);
+    });
+});
+
+it('supports several notification recipients and skips when none configured', function () {
+    Mail::fake();
+    config()->set('orders.notify_email', 'a@example.com, b@example.com');
+    $order = payOrderViaWebhook();
+    Mail::assertSent(NewOrderNotification::class, fn ($m) => $m->hasTo('a@example.com') && $m->hasTo('b@example.com'));
+
+    Mail::fake();
+    config()->set('orders.notify_email', '');
+    payOrderViaWebhook();
+    Mail::assertNotSent(NewOrderNotification::class);
+    Mail::assertSent(OrderConfirmation::class);          // customer still emailed
+});
+
+it('still records the order when the notification email fails', function () {
+    Mail::shouldReceive('to')->andThrow(new RuntimeException('SMTP down'));
+    $variant = seedVariant(3000, 5);
+    app(CartManager::class)->current()->add($variant, 2);
+    $order = app(OrderBuilder::class)->fromCart(
+        app(CartManager::class)->current()->load('lines.variant.product'),
+        ['email' => 'buyer@example.com', 'shipping_address' => ['country' => 'MT']],
+    );
+    app(PaymentGateway::class)->createIntent($order);
+
+    // Payment is already taken — a mail outage must not fail the webhook.
+    $this->postJson('/stripe/webhook', fakeEvent('payment_intent.succeeded', $order->stripe_payment_intent_id))
+        ->assertOk();
+
+    expect($order->fresh()->payment_status)->toBe('paid')
+        ->and($variant->fresh()->stock_qty)->toBe(3);
 });
 
 it('rejects a webhook with an invalid payload', function () {

@@ -2,11 +2,14 @@
 
 namespace App\Domain\Payments;
 
+use App\Mail\NewOrderNotification;
 use App\Mail\OrderConfirmation;
 use App\Models\Order;
 use App\Models\StripeEvent;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Throwable;
 
 /**
  * Webhooks are the source of truth for payment state — never the browser
@@ -59,7 +62,36 @@ class WebhookProcessor
             }
         });
 
-        Mail::to($order->email)->send(new OrderConfirmation($order));
+        $this->notify($order);
+    }
+
+    /**
+     * Confirmation to the customer, alert to the shop.
+     *
+     * Mail failures are logged, never thrown: the payment has already been
+     * taken and the order recorded, so a flaky SMTP hop must not fail the
+     * webhook — Stripe would retry, hit the isPaid() guard, and the customer
+     * would end up with no email at all.
+     */
+    protected function notify(Order $order): void
+    {
+        try {
+            Mail::to($order->email)->send(new OrderConfirmation($order));
+        } catch (Throwable $e) {
+            Log::error("Order {$order->number}: customer confirmation failed — {$e->getMessage()}");
+        }
+
+        $recipients = array_filter(array_map('trim', explode(',', (string) config('orders.notify_email'))));
+
+        if ($recipients === []) {
+            return;
+        }
+
+        try {
+            Mail::to($recipients)->send(new NewOrderNotification($order));
+        } catch (Throwable $e) {
+            Log::error("Order {$order->number}: admin notification failed — {$e->getMessage()}");
+        }
     }
 
     protected function markStatus(?string $intentId, string $status): void
