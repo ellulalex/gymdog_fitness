@@ -9,3 +9,92 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
+
+/*
+ * Storefront form controls.
+ *
+ * Tailwind's Preflight resets border-width to 0 on every element, so a utility
+ * like `border-gray-300` sets only a colour — leaving inputs with an invisible
+ * 1px-less border and no padding. (The markup was written as if
+ * @tailwindcss/forms were installed; it isn't.) These base styles give every
+ * control a real default appearance. They sit in the base layer, so utility
+ * classes on individual inputs still override them.
+ *
+ * Scoped to this stylesheet, which only the storefront layout loads — the
+ * Filament admin ships its own CSS and is unaffected.
+ */
+@layer base {
+    input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='submit']):not([type='button']):not([type='hidden']),
+    select,
+    textarea {
+        /* No width default — the inline Sort/Show selects size intrinsically,
+           and full-width fields already carry the `w-full` utility. */
+        border-width: 1px;
+        border-color: var(--color-gray-300);
+        border-radius: var(--radius-lg);
+        background-color: #fff;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.875rem;
+        line-height: 1.5;
+        color: var(--color-gray-900);
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+        color: var(--color-gray-400);
+    }
+
+    input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='submit']):not([type='button']):not([type='hidden']):focus,
+    select:focus,
+    textarea:focus {
+        outline: none;
+        border-color: var(--brand-primary, var(--color-gray-500));
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-primary, #6b7280) 18%, transparent);
+    }
+
+    input[type='checkbox'],
+    input[type='radio'] {
+        appearance: none;
+        width: 1rem;
+        height: 1rem;
+        border-width: 1px;
+        border-color: var(--color-gray-300);
+        background-color: #fff;
+        vertical-align: middle;
+        flex-shrink: 0;
+    }
+
+    input[type='radio'] {
+        border-radius: 9999px;
+    }
+
+    input[type='checkbox']:checked,
+    input[type='radio']:checked {
+        background-color: var(--brand-primary, #374151);
+        border-color: var(--brand-primary, #374151);
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: 0.75rem;
+    }
+
+    input[type='checkbox']:checked {
+        background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 0 1 0 1.414l-5 5a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L6.5 9.086l4.293-4.293a1 1 0 0 1 1.414 0z'/%3e%3c/svg%3e");
+    }
+
+    input[type='radio']:checked {
+        background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3ccircle cx='8' cy='8' r='3'/%3e%3c/svg%3e");
+    }
+
+    input[type='checkbox']:focus-visible,
+    input[type='radio']:focus-visible {
+        outline: 2px solid var(--brand-primary, #6b7280);
+        outline-offset: 2px;
+    }
+
+    /* An invalid field should read as invalid even before you focus it. */
+    input[aria-invalid='true'],
+    select[aria-invalid='true'],
+    textarea[aria-invalid='true'] {
+        border-color: var(--color-red-500);
+    }
+}
