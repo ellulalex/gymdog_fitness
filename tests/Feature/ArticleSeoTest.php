@@ -46,3 +46,18 @@ it('omits FAQ schema when a post has no faq', function () {
         ->assertSee('"@type":"Article"', false)
         ->assertDontSee('"@type":"FAQPage"', false);
 });
+
+it('noindexes non-canonical hosts but never the production domain', function () {
+    config()->set('app.url', 'https://gymdog.fitness');
+    Post::factory()->create(['slug' => 'x', 'status' => 'published', 'published_at' => now()->subDay()]);
+
+    // Staging (or any other host) must not compete with production in the index.
+    $this->get('https://staging.gymdog.fitness/x')
+        ->assertOk()
+        ->assertSee('name="robots" content="noindex, nofollow"', false);
+
+    // Production must stay indexable — this is the dangerous direction.
+    $this->get('https://gymdog.fitness/x')
+        ->assertOk()
+        ->assertDontSee('noindex', false);
+});

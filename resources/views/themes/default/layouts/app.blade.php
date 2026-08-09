@@ -1,5 +1,11 @@
 @php
     $brand = $tenant?->name ?? config('app.name');
+    // Staging serves the same content as production. Without this, Google can
+    // index both and the copy competes with the real site. noindex (not a
+    // robots.txt Disallow) is the right tool: a blocked crawler never reads the
+    // noindex, so disallowing would preserve any indexing already in place.
+    $canonicalHost = parse_url((string) config('app.url'), PHP_URL_HOST);
+    $isCanonicalHost = $canonicalHost === null || request()->getHost() === $canonicalHost;
     $palette = $tenant?->setting('palette', []) ?? [];
     $primary = $palette['primary'] ?? '#1f3d2b';   // forest green
     $secondary = $palette['secondary'] ?? '#d8c3a5'; // warm tan
@@ -14,6 +20,9 @@
     @hasSection('meta_description')
         <meta name="description" content="@yield('meta_description')">
     @endif
+    @unless ($isCanonicalHost)
+        <meta name="robots" content="noindex, nofollow">
+    @endunless
     <link rel="canonical" href="{{ url()->current() }}">
     @stack('head')
     <style>
