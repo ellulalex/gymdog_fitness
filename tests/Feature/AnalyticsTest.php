@@ -74,3 +74,14 @@ it('emits a GA4 purchase event on the confirmation page', function () {
         ->assertSee('GD-2026-09999', false)
         ->assertSee('"item_name":"Panda X3 Grips"', false);
 });
+
+it('registers the consent banner as an Alpine component, not inline JS', function () {
+    config()->set('analytics.ga4_id', 'G-TEST12345');
+
+    $res = $this->get('/')->assertOk();
+
+    // Inline JS in x-data breaks as soon as it contains a double-quoted string,
+    // which silently killed the banner and made consent impossible to give.
+    $res->assertSee('x-data="consentBanner"', false)
+        ->assertSee("Alpine.data('consentBanner'", false);
+});

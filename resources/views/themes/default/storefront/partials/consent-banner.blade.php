@@ -6,26 +6,46 @@
 @endphp
 
 @if ($needsConsent)
-    <div x-data="{
-            show: false,
-            init() {
-                try { this.show = localStorage.getItem(@json($consentKey)) === null; }
-                catch (e) { this.show = false; }
-            },
-            choose(decision) {
-                try { localStorage.setItem(@json($consentKey), decision); } catch (e) {}
-                if (window.gtag) {
-                    const granted = decision === 'granted';
-                    gtag('consent', 'update', {
-                        ad_storage: granted ? 'granted' : 'denied',
-                        ad_user_data: granted ? 'granted' : 'denied',
-                        ad_personalization: granted ? 'granted' : 'denied',
-                        analytics_storage: granted ? 'granted' : 'denied'
-                    });
-                }
-                this.show = false;
-            }
-         }"
+    {{--
+        The component is registered here rather than written inline in x-data:
+        a JS object literal in a double-quoted HTML attribute breaks the moment
+        it contains a double-quoted string (which @json always emits), which
+        silently killed the whole banner.
+    --}}
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('consentBanner', () => ({
+                key: @json($consentKey),
+                show: false,
+
+                init() {
+                    try {
+                        this.show = localStorage.getItem(this.key) === null;
+                    } catch (e) {
+                        this.show = false;   // private mode: stay silent, stay denied
+                    }
+                },
+
+                choose(decision) {
+                    try { localStorage.setItem(this.key, decision); } catch (e) {}
+
+                    if (typeof window.gtag === 'function') {
+                        const granted = decision === 'granted' ? 'granted' : 'denied';
+                        gtag('consent', 'update', {
+                            ad_storage: granted,
+                            ad_user_data: granted,
+                            ad_personalization: granted,
+                            analytics_storage: granted,
+                        });
+                    }
+
+                    this.show = false;
+                },
+            }));
+        });
+    </script>
+
+    <div x-data="consentBanner"
          x-show="show"
          x-cloak
          x-transition.opacity
