@@ -33,6 +33,7 @@
         }
     </style>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @include('storefront.partials.analytics')
     @livewireStyles
 </head>
 <body class="min-h-screen flex flex-col bg-white text-gray-900 antialiased">
@@ -103,6 +104,7 @@
             <span class="opacity-80">Built on the Gymdog commerce platform</span>
         </div>
     </footer>
+    @include('storefront.partials.consent-banner')
     @livewireScripts
 </body>
 </html>

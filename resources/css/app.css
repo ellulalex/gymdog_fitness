@@ -24,6 +24,12 @@
  * Filament admin ships its own CSS and is unaffected.
  */
 @layer base {
+    /* Hide Alpine-controlled elements until Alpine boots, so the consent
+       banner doesn't flash on every page load. */
+    [x-cloak] {
+        display: none !important;
+    }
+
     input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='submit']):not([type='button']):not([type='hidden']),
     select,
     textarea {
