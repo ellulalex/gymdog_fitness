@@ -4,9 +4,12 @@ namespace App\Filament\Resources\Posts\Tables;
 
 use App\Models\Post;
 use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Notifications\Notification;
+use Illuminate\Database\Eloquent\Collection;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -77,17 +80,30 @@ class PostsTable
                     ->visible(fn (Post $record): bool => $record->status !== 'published')
                     ->requiresConfirmation()
                     ->modalHeading('Publish this post?')
-                    ->action(fn (Post $record) => $record->update([
-                        'status' => 'published',
-                        // Publish now: keep a genuine past date, but replace a
-                        // missing or future one so the post is live immediately.
-                        'published_at' => ($record->published_at && $record->published_at->isPast())
-                            ? $record->published_at
-                            : now(),
-                    ])),
+                    ->action(fn (Post $record) => $record->publishNow()),
                 EditAction::make(),
             ])
             ->toolbarActions([
+                BulkAction::make('publish')
+                    ->label('Publish selected')
+                    ->icon('heroicon-o-check-circle')
+                    ->color('success')
+                    ->requiresConfirmation()
+                    ->modalHeading('Publish the selected posts?')
+                    ->modalDescription('Anything already published is left untouched.')
+                    ->deselectRecordsAfterCompletion()
+                    ->action(function (Collection $records) {
+                        $published = $records->reject(fn (Post $post) => $post->status === 'published');
+
+                        $published->each(fn (Post $post) => $post->publishNow());
+
+                        Notification::make()
+                            ->success()
+                            ->title($published->isEmpty()
+                                ? 'Nothing to publish — those posts are already live.'
+                                : $published->count().' post(s) published.')
+                            ->send();
+                    }),
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),

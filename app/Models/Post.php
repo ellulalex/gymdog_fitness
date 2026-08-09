@@ -39,6 +39,21 @@ class Post extends Model
         return $this->belongsToMany(PostCategory::class, 'post_category_post');
     }
 
+    /**
+     * Publish immediately. Keeps a genuine past date so backdated articles
+     * don't jump to the top of the blog, but replaces a missing or future one —
+     * a future published_at would leave the post hidden behind scopePublished().
+     */
+    public function publishNow(): void
+    {
+        $this->update([
+            'status' => 'published',
+            'published_at' => ($this->published_at && $this->published_at->isPast())
+                ? $this->published_at
+                : now(),
+        ]);
+    }
+
     public function scopePublished(Builder $query): Builder
     {
         return $query->where('status', 'published')
