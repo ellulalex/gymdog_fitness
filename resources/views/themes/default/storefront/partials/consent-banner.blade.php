@@ -45,10 +45,14 @@
         });
     </script>
 
+    {{--
+        No x-transition here: its leave transition left the element at
+        opacity:1 without ever applying display:none, so the banner stayed on
+        screen after choosing. A reliable dismissal beats a fade.
+    --}}
     <div x-data="consentBanner"
          x-show="show"
          x-cloak
-         x-transition.opacity
          class="fixed inset-x-0 bottom-0 z-50 p-4"
          role="dialog"
          aria-live="polite"
