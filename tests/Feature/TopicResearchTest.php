@@ -113,3 +113,27 @@ it('runs the command against the queue', function () {
 
     expect(Topic::where('title', 'Grip strength for pull-ups')->exists())->toBeTrue();
 });
+
+it('reports pillar coverage so the researcher can fill the gaps, not deepen the rut', function () {
+    config()->set('content.research.pillars', [
+        'Hyrox racing and stations',
+        'Nutrition, sleep and recovery',
+        'Equipment and buying guides',
+    ]);
+
+    // A lopsided library, exactly like the one the scheduler produced.
+    Post::factory()->create(['title' => 'Hyrox Sled Pull Technique']);
+    Post::factory()->create(['title' => 'Hyrox Wall Balls Explained']);
+    Post::factory()->create(['title' => 'Hyrox Pacing for Beginners']);
+    Post::factory()->create(['title' => 'Choosing Weightlifting Equipment']);
+
+    $fake = useResearcher([]);
+
+    app(TopicResearchPipeline::class)->run(3);
+
+    $coverage = $fake->calledWithCoverage;
+    expect($coverage['Hyrox racing and stations'])->toBe(3)
+        ->and($coverage['Equipment and buying guides'])->toBe(1)
+        // The untouched pillar must surface as a gap worth filling.
+        ->and($coverage['Nutrition, sleep and recovery'])->toBe(0);
+});

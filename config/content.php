@@ -90,6 +90,26 @@ return [
     'research' => [
         'default_count' => (int) env('CONTENT_RESEARCH_COUNT', 5),
         'niche' => env('CONTENT_RESEARCH_NICHE', 'functional fitness, Hyrox, CrossFit, and related fitness events'),
+
+        /*
+        | Content pillars, and the most topics a single batch may take from any
+        | one of them. Deduping alone caused severe drift: each round found new
+        | angles on whatever the last round covered, and the library ended up
+        | 83% Hyrox — which cannibalises its own keywords and reads as thin,
+        | repetitive content. The researcher is told the current spread and
+        | asked to fill the gaps.
+        */
+        'pillars' => [
+            'Hyrox racing and stations',
+            'CrossFit technique and movement standards',
+            'Equipment and buying guides',
+            'Programming, strength and conditioning',
+            'Nutrition, sleep and recovery (no medical claims)',
+            'Competitions, events and the Malta scene',
+            'Beginners getting started',
+        ],
+
+        'max_per_pillar' => (int) env('CONTENT_RESEARCH_MAX_PER_PILLAR', 2),
     ],
 
     /*

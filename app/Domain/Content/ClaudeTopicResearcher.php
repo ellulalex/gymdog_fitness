@@ -14,11 +14,29 @@ use RuntimeException;
  */
 class ClaudeTopicResearcher implements TopicResearcher
 {
-    public function research(int $count, array $avoid = []): array
+    public function research(int $count, array $avoid = [], array $coverage = []): array
     {
         $client = new Client(apiKey: config('services.anthropic.key'));
 
         $niche = config('content.research.niche');
+        $maxPerPillar = (int) config('content.research.max_per_pillar', 2);
+        $pillars = (array) config('content.research.pillars', []);
+
+        $pillarList = $pillars === [] ? '' : "\n- ".implode("\n- ", $pillars);
+
+        $spread = '';
+        if ($coverage !== []) {
+            arsort($coverage);
+            $lines = [];
+            foreach ($coverage as $pillar => $n) {
+                $lines[] = "- {$pillar}: {$n} article(s)";
+            }
+            $spread = "\n\nThe library currently covers:\n".implode("\n", $lines)
+                ."\n\nPrioritise the pillars with the FEWEST articles. Do not propose more than "
+                ."{$maxPerPillar} topic(s) from any single pillar in this batch, especially the "
+                .'most-covered one — over-concentration cannibalises our own keywords and reads '
+                .'as repetitive, low-value content.';
+        }
 
         $system = <<<SYS
         You are an SEO content strategist for GymDog, a CrossFit equipment shop
@@ -32,6 +50,8 @@ class ClaudeTopicResearcher implements TopicResearcher
         competitive), be genuinely useful to athletes/coaches, suit a Maltese
         audience, and be distinct from the others. No medical or health-claim
         angles.
+
+        Spread the batch across these content pillars:{$pillarList}{$spread}
 
         Reply with ONLY a JSON array of exactly {$count} objects, no preamble:
         [{"title": string, "angle": string (one sentence on the take/structure),

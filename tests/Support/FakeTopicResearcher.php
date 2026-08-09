@@ -16,13 +16,17 @@ class FakeTopicResearcher implements TopicResearcher
     /** @var string[] */
     public array $calledWithAvoid = [];
 
+    /** @var array<string,int> */
+    public array $calledWithCoverage = [];
+
     /** @param  ProposedTopic[]  $proposals */
     public function __construct(private array $proposals = []) {}
 
-    public function research(int $count, array $avoid = []): array
+    public function research(int $count, array $avoid = [], array $coverage = []): array
     {
         $this->calledWithCount = $count;
         $this->calledWithAvoid = $avoid;
+        $this->calledWithCoverage = $coverage;
 
         return $this->proposals;
     }

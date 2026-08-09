@@ -21,7 +21,7 @@ class TopicResearchPipeline
     {
         $existing = $this->existingTitles();
 
-        $proposals = $this->researcher->research($count, $existing);
+        $proposals = $this->researcher->research($count, $existing, $this->coverage($existing));
 
         $position = (int) Topic::max('position');
         $added = [];
@@ -47,6 +47,46 @@ class TopicResearchPipeline
         }
 
         return ['added' => count($added), 'skipped' => $skipped, 'titles' => $added];
+    }
+
+    /**
+     * Roughly how many existing titles fall under each pillar, so the researcher
+     * can steer towards the gaps. Keyword matching is deliberately crude — it
+     * only needs to be good enough to reveal a lopsided library.
+     *
+     * @param  string[]  $titles
+     * @return array<string,int>
+     */
+    private function coverage(array $titles): array
+    {
+        $pillars = (array) config('content.research.pillars', []);
+
+        if ($pillars === [] || $titles === []) {
+            return [];
+        }
+
+        $counts = [];
+        foreach ($pillars as $pillar) {
+            // Match on the pillar's significant words ("Hyrox racing and
+            // stations" → hyrox, racing, stations).
+            $words = array_filter(
+                preg_split('/[^a-z]+/i', mb_strtolower($pillar)) ?: [],
+                fn ($w) => mb_strlen($w) > 3 && ! in_array($w, ['and', 'the', 'with', 'from', 'getting', 'claims'], true),
+            );
+
+            $counts[$pillar] = 0;
+            foreach ($titles as $title) {
+                $haystack = mb_strtolower((string) $title);
+                foreach ($words as $word) {
+                    if (str_contains($haystack, $word)) {
+                        $counts[$pillar]++;
+                        break;
+                    }
+                }
+            }
+        }
+
+        return $counts;
     }
 
     /** @return string[] */
